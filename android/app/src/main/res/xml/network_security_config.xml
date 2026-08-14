@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Development build: the app talks to the local Firebase Emulator Suite over
+     plain http (auth/firestore/storage). Allow cleartext so the emulator host
+     (10.0.2.2 on an emulator, or the dev machine's LAN IP on a physical
+     device) is reachable. Remove before shipping a production build. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

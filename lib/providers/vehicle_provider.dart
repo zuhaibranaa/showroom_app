@@ -38,6 +38,15 @@ final vehicleByIdProvider =
   return vehicleService.getVehicleById(id);
 });
 
+/// Vehicle lookup that resolves to `null` for an empty/missing id instead of
+/// throwing, for screens that reference an optional related record.
+final vehicleByIdOrNullProvider =
+    FutureProvider.family<VehicleModel?, String>((ref, id) async {
+  if (id.isEmpty) return null;
+  final vehicleService = ref.watch(vehicleServiceProvider);
+  return vehicleService.getVehicleById(id);
+});
+
 // Create vehicle state
 final createVehicleProvider =
     StateNotifierProvider<CreateVehicleNotifier, AsyncValue<String>>((ref) {

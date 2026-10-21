@@ -37,6 +37,19 @@ class _DealerAddScreenState extends ConsumerState<DealerAddScreen> {
   bool get _isEditing => widget.id != null;
 
   @override
+  void initState() {
+    super.initState();
+    final cachedAgencies = ref.read(accessibleAgenciesProvider).value;
+    if (cachedAgencies != null && cachedAgencies.isNotEmpty) {
+      _selectedAgencyId = cachedAgencies.first.id;
+    }
+    if (_isEditing) {
+      final cachedDealer = ref.read(dealerByIdProvider(widget.id!)).value;
+      if (cachedDealer != null) _prefill(cachedDealer);
+    }
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
@@ -106,23 +119,29 @@ class _DealerAddScreenState extends ConsumerState<DealerAddScreen> {
     final createState = ref.watch(createDealerProvider);
     final updateState = ref.watch(updateDealerProvider);
     final agencies = ref.watch(accessibleAgenciesProvider);
-    final agencyList = agencies.value;
 
-    if (agencyList != null &&
-        agencyList.isNotEmpty &&
-        _selectedAgencyId == null &&
-        !_prefilled) {
-      _selectedAgencyId = agencyList.first.id;
-    }
+    // Default the agency selection once agencies arrive (async path).
+    ref.listen(accessibleAgenciesProvider, (_, next) {
+      final list = next.value;
+      if (list != null &&
+          list.isNotEmpty &&
+          _selectedAgencyId == null &&
+          !_prefilled) {
+        setState(() => _selectedAgencyId = list.first.id);
+      }
+    });
 
     AsyncValue<DealerModel>? editingDealer;
     if (_isEditing) {
+      ref.listen(dealerByIdProvider(widget.id!), (_, next) {
+        final data = next.value;
+        if (data != null && !_prefilled) {
+          setState(() => _prefill(data));
+        }
+      });
       editingDealer = ref.watch(dealerByIdProvider(widget.id!));
     }
     final editingData = editingDealer?.value;
-    if (editingData != null && !_prefilled) {
-      _prefill(editingData);
-    }
 
     ref.listen(createDealerProvider, (_, state) {
       if (_isEditing) return;
@@ -173,7 +192,10 @@ class _DealerAddScreenState extends ConsumerState<DealerAddScreen> {
       if (editingDealer!.hasError) {
         return Scaffold(
           appBar: AppBar(title: const Text('Edit Dealer'), elevation: 0),
-          body: ErrorView(message: editingDealer.error.toString()),
+          body: ErrorView(
+            message: editingDealer.error.toString(),
+            onBack: () => context.go('/dealers'),
+          ),
         );
       }
       if (editingData == null) {
@@ -211,6 +233,9 @@ class _DealerAddScreenState extends ConsumerState<DealerAddScreen> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.business_outlined),
                     ),
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Please select an agency'
+                        : null,
                     items: data
                         .map(
                           (a) => DropdownMenuItem(

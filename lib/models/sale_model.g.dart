@@ -23,6 +23,13 @@ SaleModel _$SaleModelFromJson(Map<String, dynamic> json) => SaleModel(
       saleDate: DateTime.parse(json['saleDate'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      receiptNo: json['receiptNo'] as String?,
+      purchaserCNIC: json['purchaserCNIC'] as String?,
+      documentStatus: json['documentStatus'] as String?,
+      pendingAmount: (json['pendingAmount'] as num?)?.toDouble(),
+      pendingDate: json['pendingDate'] == null
+          ? null
+          : DateTime.parse(json['pendingDate'] as String),
     );
 
 Map<String, dynamic> _$SaleModelToJson(SaleModel instance) => <String, dynamic>{
@@ -40,4 +47,9 @@ Map<String, dynamic> _$SaleModelToJson(SaleModel instance) => <String, dynamic>{
       'saleDate': instance.saleDate.toIso8601String(),
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
+      'receiptNo': instance.receiptNo,
+      'purchaserCNIC': instance.purchaserCNIC,
+      'documentStatus': instance.documentStatus,
+      'pendingAmount': instance.pendingAmount,
+      'pendingDate': instance.pendingDate?.toIso8601String(),
     };

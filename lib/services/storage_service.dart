@@ -7,15 +7,11 @@ class StorageService {
 
   // Upload vehicle image
   Future<String> uploadVehicleImage(String vehicleId, File imageFile) async {
-    try {
-      final fileName = '${DateTime.now().millisecondsSinceEpoch}';
-      final ref = _firebaseStorage
-          .ref('${AppConfig.vehicleImagesPath}/$vehicleId/$fileName');
-      await ref.putFile(imageFile);
-      return await ref.getDownloadURL();
-    } catch (e) {
-      rethrow;
-    }
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}';
+    final ref = _firebaseStorage
+        .ref('${AppConfig.vehicleImagesPath}/$vehicleId/$fileName');
+    await ref.putFile(imageFile);
+    return await ref.getDownloadURL();
   }
 
   // Upload sale images
@@ -23,40 +19,28 @@ class StorageService {
     String saleId,
     List<File> imageFiles,
   ) async {
-    try {
-      final List<String> imageUrls = [];
-      for (var imageFile in imageFiles) {
-        final fileName = '${DateTime.now().millisecondsSinceEpoch}';
-        final ref = _firebaseStorage
-            .ref('${AppConfig.saleImagesPath}/$saleId/$fileName');
-        await ref.putFile(imageFile);
-        final url = await ref.getDownloadURL();
-        imageUrls.add(url);
-      }
-      return imageUrls;
-    } catch (e) {
-      rethrow;
+    final List<String> imageUrls = [];
+    for (var imageFile in imageFiles) {
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}';
+      final ref = _firebaseStorage
+          .ref('${AppConfig.saleImagesPath}/$saleId/$fileName');
+      await ref.putFile(imageFile);
+      final url = await ref.getDownloadURL();
+      imageUrls.add(url);
     }
+    return imageUrls;
   }
 
   // Upload profile image
   Future<String> uploadProfileImage(String userId, File imageFile) async {
-    try {
-      final ref =
-          _firebaseStorage.ref('${AppConfig.profileImagesPath}/$userId/profile');
-      await ref.putFile(imageFile);
-      return await ref.getDownloadURL();
-    } catch (e) {
-      rethrow;
-    }
+    final ref =
+        _firebaseStorage.ref('${AppConfig.profileImagesPath}/$userId/profile');
+    await ref.putFile(imageFile);
+    return await ref.getDownloadURL();
   }
 
   // Delete file
   Future<void> deleteFile(String filePath) async {
-    try {
-      await _firebaseStorage.ref(filePath).delete();
-    } catch (e) {
-      rethrow;
-    }
+    await _firebaseStorage.ref(filePath).delete();
   }
 }

@@ -9,7 +9,7 @@ class AppConfig {
   static const String dealersCollection = 'dealers';
   static const String agenciesCollection = 'agencies';
   static const String adminInvitesCollection = 'admin_invites';
-  
+
   // Firestore Storage Paths
   static const String vehicleImagesPath = 'vehicles';
   static const String saleImagesPath = 'sales';

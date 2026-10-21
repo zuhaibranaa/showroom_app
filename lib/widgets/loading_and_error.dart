@@ -25,11 +25,13 @@ class LoadingWidget extends StatelessWidget {
 class ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
+  final VoidCallback? onBack;
 
   const ErrorView({
     super.key,
     required this.message,
     this.onRetry,
+    this.onBack,
   });
 
   @override
@@ -49,11 +51,24 @@ class ErrorView extends StatelessWidget {
             textAlign: TextAlign.center,
             style: const TextStyle(fontSize: 16),
           ),
-          if (onRetry != null) ...[
+          if (onRetry != null || onBack != null) ...[
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: onRetry,
-              child: const Text('Retry'),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (onBack != null)
+                  OutlinedButton(
+                    onPressed: onBack,
+                    child: const Text('Go Back'),
+                  ),
+                if (onBack != null && onRetry != null)
+                  const SizedBox(width: 12),
+                if (onRetry != null)
+                  ElevatedButton(
+                    onPressed: onRetry,
+                    child: const Text('Retry'),
+                  ),
+              ],
             ),
           ],
         ],

@@ -8,115 +8,100 @@ class DealerService {
 
   // Create dealer
   Future<String> createDealer(DealerModel dealer) async {
-    try {
-      final doc = await _firestore
-          .collection(AppConfig.dealersCollection)
-          .add(dealer.toJson());
-      return doc.id;
-    } catch (e) {
-      rethrow;
-    }
+    final data = dealer.toJson();
+    // Normalized email for indexed, case-insensitive lookups.
+    data['emailLower'] = dealer.email.trim().toLowerCase();
+    final doc =
+        await _firestore.collection(AppConfig.dealersCollection).add(data);
+    return doc.id;
   }
 
   // Get all dealers (Super Admin)
   Future<List<DealerModel>> getDealers() async {
-    try {
-      final querySnapshot =
-          await _firestore.collection(AppConfig.dealersCollection).get();
-      return querySnapshot.docs
-          .map((doc) => DealerModel.fromJson({...doc.data(), 'id': doc.id}))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
+    final querySnapshot =
+        await _firestore.collection(AppConfig.dealersCollection).get();
+    return querySnapshot.docs
+        .map((doc) => DealerModel.fromJson({...doc.data(), 'id': doc.id}))
+        .toList();
   }
 
   // Get dealers for an agency (Admin)
   Future<List<DealerModel>> getDealersByAgency(String agencyId) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection(AppConfig.dealersCollection)
-          .where('agencyId', isEqualTo: agencyId)
-          .get();
-      return querySnapshot.docs
-          .map((doc) => DealerModel.fromJson({...doc.data(), 'id': doc.id}))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
+    final querySnapshot = await _firestore
+        .collection(AppConfig.dealersCollection)
+        .where('agencyId', isEqualTo: agencyId)
+        .get();
+    return querySnapshot.docs
+        .map((doc) => DealerModel.fromJson({...doc.data(), 'id': doc.id}))
+        .toList();
   }
 
   // Get dealer by ID
   Future<DealerModel> getDealerById(String id) async {
-    try {
-      final doc = await _firestore
-          .collection(AppConfig.dealersCollection)
-          .doc(id)
-          .get();
-      if (!doc.exists) throw Exception('Dealer not found');
-      return DealerModel.fromJson({...doc.data()!, 'id': doc.id});
-    } catch (e) {
-      rethrow;
-    }
+    final doc = await _firestore
+        .collection(AppConfig.dealersCollection)
+        .doc(id)
+        .get();
+    if (!doc.exists) throw Exception('Dealer not found');
+    return DealerModel.fromJson({...doc.data()!, 'id': doc.id});
   }
 
-  // Get dealer by email (case-insensitive) for dealer login/registration
+  // Get dealer by email (case-insensitive) for dealer login/registration.
+  // Uses an indexed query on the normalized `emailLower` field when present,
+  // falling back to an in-memory scan only for legacy documents that predate
+  // the normalized field.
   Future<DealerModel?> getDealerByEmail(String email) async {
-    try {
-      final querySnapshot =
-          await _firestore.collection(AppConfig.dealersCollection).get();
-      for (final doc in querySnapshot.docs) {
-        final data = doc.data();
-        if ((data['email'] as String? ?? '').toLowerCase() ==
-            email.toLowerCase()) {
-          return DealerModel.fromJson({...data, 'id': doc.id});
-        }
-      }
-      return null;
-    } catch (e) {
-      rethrow;
+    final normalized = email.trim().toLowerCase();
+    final snapshot = await _firestore
+        .collection(AppConfig.dealersCollection)
+        .where('emailLower', isEqualTo: normalized)
+        .limit(1)
+        .get();
+    if (snapshot.docs.isNotEmpty) {
+      final doc = snapshot.docs.first;
+      return DealerModel.fromJson({...doc.data(), 'id': doc.id});
     }
+
+    // Legacy fallback: documents written before `emailLower` existed.
+    final all = await _firestore.collection(AppConfig.dealersCollection).get();
+    for (final doc in all.docs) {
+      final data = doc.data();
+      if ((data['email'] as String? ?? '').toLowerCase() == normalized) {
+        return DealerModel.fromJson({...data, 'id': doc.id});
+      }
+    }
+    return null;
   }
 
   // Get dealer profile by linked user ID
   Future<DealerModel?> getDealerByUserId(String userId) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection(AppConfig.dealersCollection)
-          .where('userId', isEqualTo: userId)
-          .get();
-      if (querySnapshot.docs.isEmpty) return null;
-      return DealerModel.fromJson({
-        ...querySnapshot.docs.first.data(),
-        'id': querySnapshot.docs.first.id,
-      });
-    } catch (e) {
-      rethrow;
-    }
+    final querySnapshot = await _firestore
+        .collection(AppConfig.dealersCollection)
+        .where('userId', isEqualTo: userId)
+        .get();
+    if (querySnapshot.docs.isEmpty) return null;
+    return DealerModel.fromJson({
+      ...querySnapshot.docs.first.data(),
+      'id': querySnapshot.docs.first.id,
+    });
   }
 
   // Update dealer
   Future<void> updateDealer(String id, DealerModel dealer) async {
-    try {
-      await _firestore
-          .collection(AppConfig.dealersCollection)
-          .doc(id)
-          .update(dealer.toJson());
-    } catch (e) {
-      rethrow;
-    }
+    final data = dealer.toJson();
+    data['emailLower'] = dealer.email.trim().toLowerCase();
+    await _firestore
+        .collection(AppConfig.dealersCollection)
+        .doc(id)
+        .update(data);
   }
 
   // Delete dealer
   Future<void> deleteDealer(String id) async {
-    try {
-      await _firestore
-          .collection(AppConfig.dealersCollection)
-          .doc(id)
-          .delete();
-    } catch (e) {
-      rethrow;
-    }
+    await _firestore
+        .collection(AppConfig.dealersCollection)
+        .doc(id)
+        .delete();
   }
 
   // Stream all dealers
@@ -161,37 +146,9 @@ class DealerService {
 
   // Link an authenticated user to a dealer record
   Future<void> linkDealerToUser(String dealerId, String userId) async {
-    try {
-      await _firestore
-          .collection(AppConfig.dealersCollection)
-          .doc(dealerId)
-          .update({'userId': userId});
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // Update commission
-  Future<void> updateCommission(String id, double commission) async {
-    try {
-      await _firestore
-          .collection(AppConfig.dealersCollection)
-          .doc(id)
-          .update({'totalCommission': FieldValue.increment(commission)});
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  // Update sales count
-  Future<void> incrementSalesCount(String id) async {
-    try {
-      await _firestore
-          .collection(AppConfig.dealersCollection)
-          .doc(id)
-          .update({'totalSales': FieldValue.increment(1)});
-    } catch (e) {
-      rethrow;
-    }
+    await _firestore
+        .collection(AppConfig.dealersCollection)
+        .doc(dealerId)
+        .update({'userId': userId});
   }
 }

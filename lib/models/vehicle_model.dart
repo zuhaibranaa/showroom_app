@@ -16,6 +16,24 @@ class VehicleModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // Add Used Bike fields
+  final String? receiptNo;
+  final double? eChallanFine;
+  final DateTime? biometricAvailableDate;
+  final String? biometricPhone;
+  final String? company;
+  final String? engineCC;
+  final String? documentStatus;
+  final String? source;
+  final String? engineNo;
+  final String? chassisNo;
+  final String? plateNo;
+  final String? sellerName;
+  final String? sellerCNIC;
+  final String? sellerPhone;
+  final double? priceAmount;
+  final bool isZeroMeter;
+
   VehicleModel({
     required this.id,
     this.agencyId = '',
@@ -28,6 +46,22 @@ class VehicleModel {
     this.description,
     required this.createdAt,
     required this.updatedAt,
+    this.receiptNo,
+    this.eChallanFine,
+    this.biometricAvailableDate,
+    this.biometricPhone,
+    this.company,
+    this.engineCC,
+    this.documentStatus,
+    this.source,
+    this.engineNo,
+    this.chassisNo,
+    this.plateNo,
+    this.sellerName,
+    this.sellerCNIC,
+    this.sellerPhone,
+    this.priceAmount,
+    this.isZeroMeter = false,
   });
 
   factory VehicleModel.fromJson(Map<String, dynamic> json) =>
@@ -47,6 +81,22 @@ class VehicleModel {
     String? description,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? receiptNo,
+    double? eChallanFine,
+    DateTime? biometricAvailableDate,
+    String? biometricPhone,
+    String? company,
+    String? engineCC,
+    String? documentStatus,
+    String? source,
+    String? engineNo,
+    String? chassisNo,
+    String? plateNo,
+    String? sellerName,
+    String? sellerCNIC,
+    String? sellerPhone,
+    double? priceAmount,
+    bool? isZeroMeter,
   }) {
     return VehicleModel(
       id: id ?? this.id,
@@ -60,6 +110,22 @@ class VehicleModel {
       description: description ?? this.description,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      receiptNo: receiptNo ?? this.receiptNo,
+      eChallanFine: eChallanFine ?? this.eChallanFine,
+      biometricAvailableDate: biometricAvailableDate ?? this.biometricAvailableDate,
+      biometricPhone: biometricPhone ?? this.biometricPhone,
+      company: company ?? this.company,
+      engineCC: engineCC ?? this.engineCC,
+      documentStatus: documentStatus ?? this.documentStatus,
+      source: source ?? this.source,
+      engineNo: engineNo ?? this.engineNo,
+      chassisNo: chassisNo ?? this.chassisNo,
+      plateNo: plateNo ?? this.plateNo,
+      sellerName: sellerName ?? this.sellerName,
+      sellerCNIC: sellerCNIC ?? this.sellerCNIC,
+      sellerPhone: sellerPhone ?? this.sellerPhone,
+      priceAmount: priceAmount ?? this.priceAmount,
+      isZeroMeter: isZeroMeter ?? this.isZeroMeter,
     );
   }
 }

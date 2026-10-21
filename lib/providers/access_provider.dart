@@ -46,9 +46,12 @@ class AccessService {
 }
 
 // Combines one stream per agency into a single list stream.
+// Results are deduplicated by document ID so a record that appears under
+// more than one agency is never listed twice.
 Stream<List<T>> _mergeAgencyStreams<T>(
   List<String> agencyIds,
   Stream<List<T>> Function(String agencyId) streamFor,
+  String Function(T) idOf,
 ) {
   if (agencyIds.isEmpty) return Stream.value(const []);
   late StreamController<List<T>> controller;
@@ -60,7 +63,14 @@ Stream<List<T>> _mergeAgencyStreams<T>(
         final sub = streamFor(id).listen(
           (list) {
             state[id] = list;
-            controller.add(state.values.expand((e) => e).toList());
+            final seen = <String>{};
+            final merged = <T>[];
+            for (final agencyList in state.values) {
+              for (final item in agencyList) {
+                if (seen.add(idOf(item))) merged.add(item);
+              }
+            }
+            controller.add(merged);
           },
           onError: controller.addError,
         );
@@ -97,7 +107,11 @@ final accessibleVehiclesProvider = StreamProvider<List<VehicleModel>>((ref) {
   if (AccessService.isSuperAdmin(user)) {
     return vehicleService.vehiclesStream();
   }
-  return _mergeAgencyStreams(user.agencyIds, vehicleService.vehiclesStreamByAgency);
+  return _mergeAgencyStreams(
+    user.agencyIds,
+    vehicleService.vehiclesStreamByAgency,
+    (v) => v.id,
+  );
 });
 
 /// Sales visible to the signed-in staff user.
@@ -108,7 +122,11 @@ final accessibleSalesProvider = StreamProvider<List<SaleModel>>((ref) {
   if (AccessService.isSuperAdmin(user)) {
     return saleService.salesStream();
   }
-  return _mergeAgencyStreams(user.agencyIds, saleService.salesStreamByAgency);
+  return _mergeAgencyStreams(
+    user.agencyIds,
+    saleService.salesStreamByAgency,
+    (s) => s.id,
+  );
 });
 
 /// Dealers visible to the signed-in staff user.
@@ -119,5 +137,9 @@ final accessibleDealersProvider = StreamProvider<List<DealerModel>>((ref) {
   if (AccessService.isSuperAdmin(user)) {
     return dealerService.dealersStream();
   }
-  return _mergeAgencyStreams(user.agencyIds, dealerService.dealersStreamByAgency);
+  return _mergeAgencyStreams(
+    user.agencyIds,
+    dealerService.dealersStreamByAgency,
+    (d) => d.id,
+  );
 });

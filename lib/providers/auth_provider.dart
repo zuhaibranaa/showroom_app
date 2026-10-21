@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/user_model.dart';
 import '../models/user_role.dart';
 import '../services/auth_service.dart';
+import '../services/biometric_service.dart';
 import '../services/dealer_service.dart';
 import '../services/user_service.dart';
 import 'dealer_provider.dart';
@@ -308,6 +309,16 @@ class ChangePasswordNotifier extends StateNotifier<AsyncValue<void>> {
         uid,
         existing.copyWith(mustChangePassword: false, updatedAt: now),
       );
+      // Keep biometric quick-login credentials in sync with the new password
+      // so the stored secret does not go stale.
+      final biometric = BiometricService();
+      if (await biometric.isBiometricEnabled()) {
+        await biometric.updateStoredCredentials(
+          email: existing.email,
+          password: newPassword,
+          role: existing.role,
+        );
+      }
     });
   }
 }

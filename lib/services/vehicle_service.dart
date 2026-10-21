@@ -7,80 +7,56 @@ class VehicleService {
 
   // Create vehicle
   Future<String> createVehicle(VehicleModel vehicle) async {
-    try {
-      final doc = await _firestore
-          .collection(AppConfig.vehiclesCollection)
-          .add(vehicle.toJson());
-      return doc.id;
-    } catch (e) {
-      rethrow;
-    }
+    final doc = await _firestore
+        .collection(AppConfig.vehiclesCollection)
+        .add(vehicle.toJson());
+    return doc.id;
   }
 
   // Get all vehicles
   Future<List<VehicleModel>> getVehicles() async {
-    try {
-      final querySnapshot =
-          await _firestore.collection(AppConfig.vehiclesCollection).get();
-      return querySnapshot.docs
-          .map((doc) => VehicleModel.fromJson({...doc.data(), 'id': doc.id}))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
+    final querySnapshot =
+        await _firestore.collection(AppConfig.vehiclesCollection).get();
+    return querySnapshot.docs
+        .map((doc) => VehicleModel.fromJson({...doc.data(), 'id': doc.id}))
+        .toList();
   }
 
   // Get vehicles for an agency
   Future<List<VehicleModel>> getVehiclesByAgency(String agencyId) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection(AppConfig.vehiclesCollection)
-          .where('agencyId', isEqualTo: agencyId)
-          .get();
-      return querySnapshot.docs
-          .map((doc) => VehicleModel.fromJson({...doc.data(), 'id': doc.id}))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
+    final querySnapshot = await _firestore
+        .collection(AppConfig.vehiclesCollection)
+        .where('agencyId', isEqualTo: agencyId)
+        .get();
+    return querySnapshot.docs
+        .map((doc) => VehicleModel.fromJson({...doc.data(), 'id': doc.id}))
+        .toList();
   }
 
   // Get vehicle by ID
   Future<VehicleModel> getVehicleById(String id) async {
-    try {
-      final doc = await _firestore
-          .collection(AppConfig.vehiclesCollection)
-          .doc(id)
-          .get();
-      if (!doc.exists) throw Exception('Vehicle not found');
-      return VehicleModel.fromJson({...doc.data()!, 'id': doc.id});
-    } catch (e) {
-      rethrow;
-    }
+    final doc = await _firestore
+        .collection(AppConfig.vehiclesCollection)
+        .doc(id)
+        .get();
+    if (!doc.exists) throw Exception('Vehicle not found');
+    return VehicleModel.fromJson({...doc.data()!, 'id': doc.id});
   }
 
   // Update vehicle
   Future<void> updateVehicle(String id, VehicleModel vehicle) async {
-    try {
-      await _firestore
-          .collection(AppConfig.vehiclesCollection)
-          .doc(id)
-          .update(vehicle.toJson());
-    } catch (e) {
-      rethrow;
-    }
+    await _firestore
+        .collection(AppConfig.vehiclesCollection)
+        .doc(id)
+        .update(vehicle.toJson());
   }
 
   // Delete vehicle
   Future<void> deleteVehicle(String id) async {
-    try {
-      await _firestore
-          .collection(AppConfig.vehiclesCollection)
-          .doc(id)
-          .delete();
-    } catch (e) {
-      rethrow;
-    }
+    await _firestore
+        .collection(AppConfig.vehiclesCollection)
+        .doc(id)
+        .delete();
   }
 
   // Stream all vehicles

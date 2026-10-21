@@ -19,6 +19,13 @@ class SaleModel {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  // Sell Bike fields
+  final String? receiptNo;
+  final String? purchaserCNIC;
+  final String? documentStatus;
+  final double? pendingAmount;
+  final DateTime? pendingDate;
+
   SaleModel({
     required this.id,
     this.agencyId = '',
@@ -34,6 +41,11 @@ class SaleModel {
     required this.saleDate,
     required this.createdAt,
     required this.updatedAt,
+    this.receiptNo,
+    this.purchaserCNIC,
+    this.documentStatus,
+    this.pendingAmount,
+    this.pendingDate,
   });
 
   factory SaleModel.fromJson(Map<String, dynamic> json) =>
@@ -58,6 +70,11 @@ class SaleModel {
     DateTime? saleDate,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? receiptNo,
+    String? purchaserCNIC,
+    String? documentStatus,
+    double? pendingAmount,
+    DateTime? pendingDate,
   }) {
     return SaleModel(
       id: id ?? this.id,
@@ -74,6 +91,11 @@ class SaleModel {
       saleDate: saleDate ?? this.saleDate,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      receiptNo: receiptNo ?? this.receiptNo,
+      purchaserCNIC: purchaserCNIC ?? this.purchaserCNIC,
+      documentStatus: documentStatus ?? this.documentStatus,
+      pendingAmount: pendingAmount ?? this.pendingAmount,
+      pendingDate: pendingDate ?? this.pendingDate,
     );
   }
 }

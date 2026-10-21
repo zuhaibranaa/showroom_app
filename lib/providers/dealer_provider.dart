@@ -42,6 +42,15 @@ final dealerByIdProvider =
   return dealerService.getDealerById(id);
 });
 
+/// Dealer lookup that resolves to `null` for an empty/missing id instead of
+/// throwing, for screens that reference an optional related record.
+final dealerByIdOrNullProvider =
+    FutureProvider.family<DealerModel?, String>((ref, id) async {
+  if (id.isEmpty) return null;
+  final dealerService = ref.watch(dealerServiceProvider);
+  return dealerService.getDealerById(id);
+});
+
 // Create dealer state
 final createDealerProvider =
     StateNotifierProvider<CreateDealerNotifier, AsyncValue<String>>((ref) {

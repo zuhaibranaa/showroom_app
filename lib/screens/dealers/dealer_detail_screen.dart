@@ -129,7 +129,10 @@ class _DealerDetailScreenState extends ConsumerState<DealerDetailScreen> {
           );
         },
         loading: () => const LoadingWidget(message: 'Loading dealer...'),
-        error: (error, _) => ErrorView(message: error.toString()),
+        error: (error, _) => ErrorView(
+          message: error.toString(),
+          onBack: () => context.go('/dealers'),
+        ),
       ),
     );
   }

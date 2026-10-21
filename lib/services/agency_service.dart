@@ -7,45 +7,34 @@ class AgencyService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<String> createAgency(AgencyModel agency) async {
-    try {
-      final doc = await _firestore
-          .collection(AppConfig.agenciesCollection)
-          .add(agency.toJson());
-      return doc.id;
-    } catch (e) {
-      rethrow;
-    }
+    final doc = await _firestore
+        .collection(AppConfig.agenciesCollection)
+        .add(agency.toJson());
+    return doc.id;
   }
 
   Future<List<AgencyModel>> getAgencies() async {
-    try {
-      final querySnapshot =
-          await _firestore.collection(AppConfig.agenciesCollection).get();
-      return querySnapshot.docs
-          .map((doc) => AgencyModel.fromJson({...doc.data(), 'id': doc.id}))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
+    final querySnapshot =
+        await _firestore.collection(AppConfig.agenciesCollection).get();
+    return querySnapshot.docs
+        .map((doc) => AgencyModel.fromJson({...doc.data(), 'id': doc.id}))
+        .toList();
   }
 
   Future<AgencyModel> getAgencyById(String id) async {
-    try {
-      final doc = await _firestore
-          .collection(AppConfig.agenciesCollection)
-          .doc(id)
-          .get();
-      if (!doc.exists) throw Exception('Agency not found');
-      return AgencyModel.fromJson({...doc.data()!, 'id': doc.id});
-    } catch (e) {
-      rethrow;
-    }
+    final doc = await _firestore
+        .collection(AppConfig.agenciesCollection)
+        .doc(id)
+        .get();
+    if (!doc.exists) throw Exception('Agency not found');
+    return AgencyModel.fromJson({...doc.data()!, 'id': doc.id});
   }
 
   Future<List<AgencyModel>> getAgenciesByIds(List<String> ids) async {
     if (ids.isEmpty) return [];
     final results = <AgencyModel>[];
-    for (final chunk in _chunks(ids, 10)) {
+    // Firestore allows at most 30 values per `whereIn` query.
+    for (final chunk in _chunks(ids, 30)) {
       final querySnapshot = await _firestore
           .collection(AppConfig.agenciesCollection)
           .where(FieldPath.documentId, whereIn: chunk)
@@ -68,25 +57,17 @@ class AgencyService {
   }
 
   Future<void> updateAgency(String id, AgencyModel agency) async {
-    try {
-      await _firestore
-          .collection(AppConfig.agenciesCollection)
-          .doc(id)
-          .update(agency.toJson());
-    } catch (e) {
-      rethrow;
-    }
+    await _firestore
+        .collection(AppConfig.agenciesCollection)
+        .doc(id)
+        .update(agency.toJson());
   }
 
   Future<void> deleteAgency(String id) async {
-    try {
-      await _firestore
-          .collection(AppConfig.agenciesCollection)
-          .doc(id)
-          .delete();
-    } catch (e) {
-      rethrow;
-    }
+    await _firestore
+        .collection(AppConfig.agenciesCollection)
+        .doc(id)
+        .delete();
   }
 
   List<List<T>> _chunks<T>(List<T> list, int size) {

@@ -118,7 +118,10 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen> {
           ],
         ),
         loading: () => const LoadingWidget(message: 'Loading vehicle...'),
-        error: (error, _) => ErrorView(message: error.toString()),
+        error: (error, _) => ErrorView(
+          message: error.toString(),
+          onBack: () => context.go('/vehicles'),
+        ),
       ),
     );
   }

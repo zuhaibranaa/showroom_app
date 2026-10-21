@@ -42,6 +42,21 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
   bool get _isEditing => widget.id != null;
 
   @override
+  void initState() {
+    super.initState();
+    // Populate from already-cached provider values so nothing is mutated
+    // during build; values that arrive later are handled via ref.listen.
+    final cachedAgencies = ref.read(accessibleAgenciesProvider).value;
+    if (cachedAgencies != null && cachedAgencies.isNotEmpty) {
+      _selectedAgencyId = cachedAgencies.first.id;
+    }
+    if (_isEditing) {
+      final cachedSale = ref.read(saleByIdProvider(widget.id!)).value;
+      if (cachedSale != null) _prefill(cachedSale);
+    }
+  }
+
+  @override
   void dispose() {
     _buyerNameController.dispose();
     _buyerEmailController.dispose();
@@ -135,14 +150,17 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
     final createState = ref.watch(createSaleProvider);
     final updateState = ref.watch(updateSaleProvider);
     final agencies = ref.watch(accessibleAgenciesProvider);
-    final agencyList = agencies.value;
 
-    if (agencyList != null &&
-        agencyList.isNotEmpty &&
-        _selectedAgencyId == null &&
-        !_prefilled) {
-      _selectedAgencyId = agencyList.first.id;
-    }
+    // Default the agency selection once agencies arrive (async path).
+    ref.listen(accessibleAgenciesProvider, (_, next) {
+      final list = next.value;
+      if (list != null &&
+          list.isNotEmpty &&
+          _selectedAgencyId == null &&
+          !_prefilled) {
+        setState(() => _selectedAgencyId = list.first.id);
+      }
+    });
 
     final selectedAgencyId = _selectedAgencyId;
     final vehicles = selectedAgencyId == null
@@ -154,12 +172,15 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
 
     AsyncValue<SaleModel>? editingSale;
     if (_isEditing) {
+      ref.listen(saleByIdProvider(widget.id!), (_, next) {
+        final data = next.value;
+        if (data != null && !_prefilled) {
+          setState(() => _prefill(data));
+        }
+      });
       editingSale = ref.watch(saleByIdProvider(widget.id!));
     }
     final editingData = editingSale?.value;
-    if (editingData != null && !_prefilled) {
-      _prefill(editingData);
-    }
 
     ref.listen(createSaleProvider, (_, state) {
       if (_isEditing) return;
@@ -210,7 +231,10 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
       if (editingSale!.hasError) {
         return Scaffold(
           appBar: AppBar(title: const Text('Edit Sale'), elevation: 0),
-          body: ErrorView(message: editingSale.error.toString()),
+          body: ErrorView(
+            message: editingSale.error.toString(),
+            onBack: () => context.go('/sales'),
+          ),
         );
       }
       if (editingData == null) {
@@ -272,6 +296,9 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.business_outlined),
                     ),
+                    validator: (value) => (value == null || value.isEmpty)
+                        ? 'Please select an agency'
+                        : null,
                     items: data
                         .map(
                           (a) => DropdownMenuItem(
@@ -300,6 +327,9 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
                     labelText: 'Vehicle',
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) => (value == null || value.isEmpty)
+                      ? 'Please select a vehicle'
+                      : null,
                   items: vehicleList
                       .map(
                         (v) => DropdownMenuItem(
@@ -328,6 +358,9 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
                     labelText: 'Dealer',
                     border: OutlineInputBorder(),
                   ),
+                  validator: (value) => (value == null || value.isEmpty)
+                      ? 'Please select a dealer'
+                      : null,
                   items: dealerList
                       .map(
                         (d) => DropdownMenuItem(

@@ -58,8 +58,10 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final sale = ref.watch(saleByIdProvider(widget.saleId));
-    final vehicle = ref.watch(vehicleByIdProvider(sale.value?.vehicleId ?? ''));
-    final dealer = ref.watch(dealerByIdProvider(sale.value?.dealerId ?? ''));
+    final vehicle =
+        ref.watch(vehicleByIdOrNullProvider(sale.value?.vehicleId ?? ''));
+    final dealer =
+        ref.watch(dealerByIdOrNullProvider(sale.value?.dealerId ?? ''));
 
     return Scaffold(
       appBar: AppBar(
@@ -78,10 +80,11 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
       ),
       body: sale.when(
         data: (data) {
-          final vehicleName = vehicle.hasValue
+          final vehicleName = vehicle.value != null
               ? '${vehicle.value!.make} ${vehicle.value!.model}'
-              : data.vehicleId;
-          final dealerName = dealer.hasValue ? dealer.value!.name : data.dealerId;
+              : (data.vehicleId.isEmpty ? 'Unknown' : data.vehicleId);
+          final dealerName = dealer.value?.name ??
+              (data.dealerId.isEmpty ? 'Unknown' : data.dealerId);
 
           return ListView(
             padding: const EdgeInsets.all(16),
@@ -141,7 +144,10 @@ class _SaleDetailScreenState extends ConsumerState<SaleDetailScreen> {
           );
         },
         loading: () => const LoadingWidget(message: 'Loading sale...'),
-        error: (error, _) => ErrorView(message: error.toString()),
+        error: (error, _) => ErrorView(
+          message: error.toString(),
+          onBack: () => context.go('/sales'),
+        ),
       ),
     );
   }

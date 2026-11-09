@@ -2,9 +2,16 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../compat/access_service_compat.dart';
+import '../compat/model_converters.dart';
+import '../core/domain/entities/agency.dart';
+import '../core/domain/entities/dealer.dart';
+import '../core/domain/entities/sale.dart';
+import '../core/domain/entities/user.dart';
+import '../core/domain/entities/vehicle.dart';
+import '../core/domain/services/access_service.dart';
 import '../models/agency_model.dart';
 import '../models/dealer_model.dart';
-import '../models/dealer_permissions.dart';
 import '../models/sale_model.dart';
 import '../models/user_model.dart';
 import '../models/vehicle_model.dart';
@@ -14,47 +21,14 @@ import 'dealer_provider.dart';
 import 'sale_provider.dart';
 import 'vehicle_provider.dart';
 
-/// Centralized RBAC helpers for the app.
-class AccessService {
-  static bool isSuperAdmin(UserModel? user) => user?.role == 'super_admin';
-  static bool isAdmin(UserModel? user) => user?.role == 'admin';
-  static bool isDealer(UserModel? user) => user?.role == 'dealer';
-  static bool isStaff(UserModel? user) => isSuperAdmin(user) || isAdmin(user);
+/// Access service provider (DIP: depend on [IAccessService] abstraction).
+final accessServiceProvider = Provider<IAccessService>((ref) {
+  return AccessServiceAdapter();
+});
 
-  /// True if the user is the designated owner of an agency.
-  static bool isAgencyOwner(UserModel? user) => user?.isAgencyOwner == true;
-
-  /// Can invite other agency admins: super admin or agency owner.
-  static bool canInviteAgencyAdmin(UserModel? user) =>
-      isSuperAdmin(user) || isAgencyOwner(user);
-
-  /// Resolves the permission block a dealer has for a module.
-  static ModulePermission dealerPermission(DealerModel dealer, String module) {
-    switch (module) {
-      case 'vehicles':
-        return dealer.permissions.vehicles;
-      case 'sales':
-        return dealer.permissions.sales;
-      case 'dealers':
-        return dealer.permissions.dealers;
-      default:
-        return const ModulePermission();
-    }
-  }
-
-  static bool dealerCanView(DealerModel dealer, String module) =>
-      dealerPermission(dealer, module).view;
-
-  static bool dealerCanCreate(DealerModel dealer, String module) =>
-      dealerPermission(dealer, module).create;
-
-  static bool dealerCanEdit(DealerModel dealer, String module) =>
-      dealerPermission(dealer, module).edit;
-}
-
-// Combines one stream per agency into a single list stream.
-// Results are deduplicated by document ID so a record that appears under
-// more than one agency is never listed twice.
+/// Combines one stream per agency into a single list stream.
+/// Results are deduplicated by document ID so a record that appears under
+/// more than one agency is never listed twice.
 Stream<List<T>> _mergeAgencyStreams<T>(
   List<String> agencyIds,
   Stream<List<T>> Function(String agencyId) streamFor,
@@ -99,24 +73,30 @@ Stream<List<T>> _mergeAgencyStreams<T>(
 final accessibleAgenciesProvider = FutureProvider<List<AgencyModel>>((ref) async {
   final user = ref.watch(currentUserProvider).value;
   if (user == null) return const [];
-  final agencyService = ref.watch(agencyServiceProvider);
-  if (AccessService.isSuperAdmin(user)) {
-    return agencyService.getAgencies();
+  final agencyService = ref.watch(agencyApplicationServiceProvider);
+  final accessService = ref.watch(accessServiceProvider);
+  if (accessService.isSuperAdmin(userModelToEntity(user))) {
+    final entities = await agencyService.getAll();
+    return entities.map(agencyEntityToModel).toList();
   }
-  return agencyService.getAgenciesByIds(user.agencyIds);
+  final entities = await agencyService.getByIds(user.agencyIds);
+  return entities.map(agencyEntityToModel).toList();
 });
 
 /// Vehicles visible to the signed-in staff user.
 final accessibleVehiclesProvider = StreamProvider<List<VehicleModel>>((ref) {
   final user = ref.watch(currentUserProvider).value;
   if (user == null) return Stream.value(const []);
-  final vehicleService = ref.watch(vehicleServiceProvider);
-  if (AccessService.isSuperAdmin(user)) {
-    return vehicleService.vehiclesStream();
+  final vehicleService = ref.watch(vehicleApplicationServiceProvider);
+  final accessService = ref.watch(accessServiceProvider);
+  if (accessService.isSuperAdmin(userModelToEntity(user))) {
+    return vehicleService.streamAll().map((entities) =>
+        entities.map(vehicleEntityToModel).toList());
   }
   return _mergeAgencyStreams(
     user.agencyIds,
-    vehicleService.vehiclesStreamByAgency,
+    (id) => vehicleService.streamByAgency(id).map((entities) =>
+        entities.map(vehicleEntityToModel).toList()),
     (v) => v.id,
   );
 });
@@ -125,13 +105,16 @@ final accessibleVehiclesProvider = StreamProvider<List<VehicleModel>>((ref) {
 final accessibleSalesProvider = StreamProvider<List<SaleModel>>((ref) {
   final user = ref.watch(currentUserProvider).value;
   if (user == null) return Stream.value(const []);
-  final saleService = ref.watch(saleServiceProvider);
-  if (AccessService.isSuperAdmin(user)) {
-    return saleService.salesStream();
+  final saleService = ref.watch(saleApplicationServiceProvider);
+  final accessService = ref.watch(accessServiceProvider);
+  if (accessService.isSuperAdmin(userModelToEntity(user))) {
+    return saleService.streamAll().map((entities) =>
+        entities.map(saleEntityToModel).toList());
   }
   return _mergeAgencyStreams(
     user.agencyIds,
-    saleService.salesStreamByAgency,
+    (id) => saleService.streamByAgency(id).map((entities) =>
+        entities.map(saleEntityToModel).toList()),
     (s) => s.id,
   );
 });
@@ -140,13 +123,72 @@ final accessibleSalesProvider = StreamProvider<List<SaleModel>>((ref) {
 final accessibleDealersProvider = StreamProvider<List<DealerModel>>((ref) {
   final user = ref.watch(currentUserProvider).value;
   if (user == null) return Stream.value(const []);
-  final dealerService = ref.watch(dealerServiceProvider);
-  if (AccessService.isSuperAdmin(user)) {
-    return dealerService.dealersStream();
+  final dealerService = ref.watch(dealerApplicationServiceProvider);
+  final accessService = ref.watch(accessServiceProvider);
+  if (accessService.isSuperAdmin(userModelToEntity(user))) {
+    return dealerService.streamAll().map((entities) =>
+        entities.map(dealerEntityToModel).toList());
   }
   return _mergeAgencyStreams(
     user.agencyIds,
-    dealerService.dealersStreamByAgency,
+    (id) => dealerService.streamByAgency(id).map((entities) =>
+        entities.map(dealerEntityToModel).toList()),
     (d) => d.id,
   );
 });
+
+/// Backward-compatible static access service for screens.
+/// Delegates to [AccessServiceCompat] which uses [IAccessService] internally.
+class AccessService {
+  static bool isSuperAdmin(UserModel? user) =>
+      AccessServiceCompat.isSuperAdmin(user);
+  static bool isAdmin(UserModel? user) => AccessServiceCompat.isAdmin(user);
+  static bool isDealer(UserModel? user) => AccessServiceCompat.isDealer(user);
+  static bool isStaff(UserModel? user) => AccessServiceCompat.isStaff(user);
+  static bool isAgencyOwner(UserModel? user) =>
+      AccessServiceCompat.isAgencyOwner(user);
+  static bool canInviteAgencyAdmin(UserModel? user) =>
+      AccessServiceCompat.canInviteAgencyAdmin(user);
+
+  static bool dealerCanView(DealerModel? dealer, String module) {
+    if (dealer == null) return false;
+    switch (module) {
+      case 'vehicles':
+        return dealer.permissions.vehicles.view;
+      case 'sales':
+        return dealer.permissions.sales.view;
+      case 'dealers':
+        return dealer.permissions.dealers.view;
+      default:
+        return false;
+    }
+  }
+
+  static bool dealerCanCreate(DealerModel? dealer, String module) {
+    if (dealer == null) return false;
+    switch (module) {
+      case 'vehicles':
+        return dealer.permissions.vehicles.create;
+      case 'sales':
+        return dealer.permissions.sales.create;
+      case 'dealers':
+        return dealer.permissions.dealers.create;
+      default:
+        return false;
+    }
+  }
+
+  static bool dealerCanEdit(DealerModel? dealer, String module) {
+    if (dealer == null) return false;
+    switch (module) {
+      case 'vehicles':
+        return dealer.permissions.vehicles.edit;
+      case 'sales':
+        return dealer.permissions.sales.edit;
+      case 'dealers':
+        return dealer.permissions.dealers.edit;
+      default:
+        return false;
+    }
+  }
+}

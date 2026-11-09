@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../compat/model_converters.dart';
+import '../core/domain/entities/dealer.dart';
 import '../models/dealer_model.dart';
 import 'auth_provider.dart';
 import 'dealer_provider.dart';
@@ -11,6 +13,7 @@ final currentDealerProfileProvider = StreamProvider<DealerModel?>((ref) {
   if (uid == null) {
     return Stream.value(null);
   }
-  final dealerService = ref.watch(dealerServiceProvider);
-  return dealerService.dealerStreamByUserId(uid);
+  final dealerService = ref.watch(dealerApplicationServiceProvider);
+  return dealerService.streamByUserId(uid).map((entity) =>
+      entity != null ? dealerEntityToModel(entity) : null);
 });

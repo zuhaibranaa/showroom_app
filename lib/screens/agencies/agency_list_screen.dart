@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../providers/access_provider.dart';
 import '../../providers/agency_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/loading_and_error.dart';
 
@@ -15,6 +17,18 @@ class AgencyListScreen extends ConsumerStatefulWidget {
 
 class _AgencyListScreenState extends ConsumerState<AgencyListScreen> {
   Future<void> _deleteAgency(String id, String name) async {
+    final user = ref.read(currentUserProvider).value;
+    if (user == null ||
+        (!AccessService.isSuperAdmin(user) &&
+            (!AccessService.isAgencyOwner(user) ||
+                !user.agencyIds.contains(id)))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Only the agency owner or super admin can delete agencies.'),
+        ),
+      );
+      return;
+    }
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

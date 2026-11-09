@@ -21,6 +21,13 @@ class AccessService {
   static bool isDealer(UserModel? user) => user?.role == 'dealer';
   static bool isStaff(UserModel? user) => isSuperAdmin(user) || isAdmin(user);
 
+  /// True if the user is the designated owner of an agency.
+  static bool isAgencyOwner(UserModel? user) => user?.isAgencyOwner == true;
+
+  /// Can invite other agency admins: super admin or agency owner.
+  static bool canInviteAgencyAdmin(UserModel? user) =>
+      isSuperAdmin(user) || isAgencyOwner(user);
+
   /// Resolves the permission block a dealer has for a module.
   static ModulePermission dealerPermission(DealerModel dealer, String module) {
     switch (module) {

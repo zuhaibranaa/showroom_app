@@ -1,12 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../models/sale_model.dart';
 import '../../providers/access_provider.dart';
 import '../../providers/dealer_provider.dart';
 import '../../providers/sale_provider.dart';
 import '../../providers/vehicle_provider.dart';
+import '../../services/cloudinary_service.dart';
 import '../../utils/extensions.dart';
 import '../../utils/validators.dart';
 import '../../widgets/custom_button.dart';
@@ -38,6 +42,9 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
 
   bool _prefilled = false;
   DateTime? _originalCreatedAt;
+
+  List<File> _selectedSaleImages = [];
+  bool _uploadingImages = false;
 
   bool get _isEditing => widget.id != null;
 
@@ -96,14 +103,37 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
     }
   }
 
+  Future<void> _pickImages() async {
+    try {
+      final picked = await ImagePicker().pickMultiImage();
+      if (picked.isNotEmpty) {
+        setState(() {
+          _selectedSaleImages.addAll(
+            picked.map((x) => File(x.path)),
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to pick images: $e')));
+      }
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedSaleImages.removeAt(index);
+    });
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedAgencyId == null ||
-        _selectedVehicleId == null ||
-        _selectedDealerId == null) {
+    if (_selectedAgencyId == null || _selectedVehicleId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select an agency, a vehicle and a dealer'),
+          content: Text('Please select an agency and a vehicle'),
         ),
       );
       return;
@@ -120,12 +150,34 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
       return;
     }
 
+    // Upload images to Cloudinary if any selected.
+    List<String>? imageUrls;
+    if (_selectedSaleImages.isNotEmpty) {
+      setState(() => _uploadingImages = true);
+      try {
+        final cloudinary = CloudinaryService();
+        imageUrls = await cloudinary.uploadImages(
+          _selectedSaleImages,
+          folder: 'sales/${_selectedAgencyId}',
+        );
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Image upload failed: $e')));
+        }
+        setState(() => _uploadingImages = false);
+        return;
+      }
+      setState(() => _uploadingImages = false);
+    }
+
     final now = DateTime.now();
     final sale = SaleModel(
       id: widget.id ?? '',
       agencyId: _selectedAgencyId!,
       vehicleId: _selectedVehicleId!,
-      dealerId: _selectedDealerId!,
+      dealerId: _selectedDealerId,
       buyerName: _buyerNameController.text.trim(),
       buyerEmail: _buyerEmailController.text.trim(),
       buyerPhone: _buyerPhoneController.text.trim(),
@@ -137,6 +189,7 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
       saleDate: _saleDate,
       createdAt: _originalCreatedAt ?? now,
       updatedAt: now,
+      imageUrls: imageUrls,
     );
     if (_isEditing) {
       await ref.read(updateSaleProvider.notifier).updateSale(widget.id!, sale);
@@ -195,9 +248,9 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
         },
         error: (error, _) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(error.toString())));
           }
         },
         loading: () {},
@@ -218,9 +271,9 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
         },
         error: (error, _) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(error.toString())));
           }
         },
         loading: () {},
@@ -352,23 +405,24 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
               ),
               const SizedBox(height: 16),
               dealers.when(
-                data: (dealerList) => DropdownButtonFormField<String>(
+                data: (dealerList) => DropdownButtonFormField<String?>(
                   initialValue: _selectedDealerId,
                   decoration: const InputDecoration(
-                    labelText: 'Dealer',
+                    labelText: 'Dealer (optional)',
                     border: OutlineInputBorder(),
                   ),
-                  validator: (value) => (value == null || value.isEmpty)
-                      ? 'Please select a dealer'
-                      : null,
-                  items: dealerList
-                      .map(
-                        (d) => DropdownMenuItem(
-                          value: d.id,
-                          child: Text(d.name),
-                        ),
-                      )
-                      .toList(),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('No dealer'),
+                    ),
+                    ...dealerList.map(
+                      (d) => DropdownMenuItem<String?>(
+                        value: d.id,
+                        child: Text(d.name),
+                      ),
+                    ),
+                  ],
                   onChanged: (value) {
                     setState(() {
                       _selectedDealerId = value;
@@ -414,11 +468,73 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
                 maxLines: 3,
                 minLines: 3,
               ),
+              const SizedBox(height: 16),
+              const Text(
+                'Sale Images (optional)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: _uploadingImages ? null : _pickImages,
+                    icon: const Icon(Icons.add_a_photo),
+                    label: const Text('Add Images'),
+                  ),
+                  const SizedBox(width: 12),
+                  if (_uploadingImages)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (_selectedSaleImages.isNotEmpty)
+                SizedBox(
+                  height: 80,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _selectedSaleImages.length,
+                    itemBuilder: (context, index) {
+                      return Stack(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            width: 80,
+                            child: Image.file(
+                              _selectedSaleImages[index],
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: GestureDetector(
+                              onTap: () => _removeImage(index),
+                              child: Container(
+                                color: Colors.black54,
+                                child: const Icon(
+                                  Icons.close,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              if (_selectedSaleImages.isNotEmpty) const SizedBox(height: 8),
               const SizedBox(height: 8),
               CustomButton(
                 label: _isEditing ? 'Save Changes' : 'Record Sale',
-                isLoading:
-                    _isEditing ? updateState.isLoading : createState.isLoading,
+                isLoading: _isEditing
+                    ? updateState.isLoading
+                    : createState.isLoading,
                 onPressed: _submit,
               ),
             ],

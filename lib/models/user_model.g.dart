@@ -20,6 +20,7 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
       agencyId: json['agencyId'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       mustChangePassword: json['mustChangePassword'] as bool? ?? false,
+      isAgencyOwner: json['isAgencyOwner'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
@@ -35,6 +36,7 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'agencyId': instance.agencyId,
       'isActive': instance.isActive,
       'mustChangePassword': instance.mustChangePassword,
+      'isAgencyOwner': instance.isAgencyOwner,
       'createdAt': instance.createdAt.toIso8601String(),
       'updatedAt': instance.updatedAt.toIso8601String(),
     };

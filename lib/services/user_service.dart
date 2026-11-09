@@ -61,6 +61,7 @@ class UserService {
     required String name,
     required String email,
     required List<String> agencyIds,
+    bool isAgencyOwner = false,
   }) async {
     final now = DateTime.now();
     await _firestore
@@ -70,6 +71,7 @@ class UserService {
       'name': name.trim(),
       'email': email.trim(),
       'agencyIds': agencyIds,
+      'isAgencyOwner': isAgencyOwner,
       'createdAt': now,
       'updatedAt': now,
     });
@@ -97,6 +99,7 @@ class UserService {
     required String email,
     String? name,
     required List<String> agencyIds,
+    bool? isAgencyOwner,
   }) async {
     await _firestore
         .collection(AppConfig.adminInvitesCollection)
@@ -104,6 +107,7 @@ class UserService {
         .update({
       if (name != null) 'name': name.trim(),
       'agencyIds': agencyIds,
+      if (isAgencyOwner != null) 'isAgencyOwner': isAgencyOwner,
       'updatedAt': DateTime.now(),
     });
   }

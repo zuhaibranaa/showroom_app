@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" width="720" height="720" font-family="sans-serif">
+  <rect width="720" height="720" fill="#e8d4b0"/>
+  <!-- 5x5 grid, cells 100, origin (110,110) -->
+  <g stroke="#6b4f2a" stroke-width="2" fill="#f4e2c4">
+    <rect x="110" y="110" width="100" height="100"/><rect x="210" y="110" width="100" height="100"/><rect x="310" y="110" width="100" height="100"/><rect x="410" y="110" width="100" height="100"/><rect x="510" y="110" width="100" height="100"/>
+    <rect x="110" y="210" width="100" height="100"/><rect x="210" y="210" width="100" height="100"/><rect x="310" y="210" width="100" height="100"/><rect x="410" y="210" width="100" height="100"/><rect x="510" y="210" width="100" height="100"/>
+    <rect x="110" y="310" width="100" height="100"/><rect x="210" y="310" width="100" height="100"/><rect x="310" y="310" width="100" height="100"/><rect x="410" y="310" width="100" height="100"/><rect x="510" y="310" width="100" height="100"/>
+    <rect x="110" y="410" width="100" height="100"/><rect x="210" y="410" width="100" height="100"/><rect x="310" y="410" width="100" height="100"/><rect x="410" y="410" width="100" height="100"/><rect x="510" y="410" width="100" height="100"/>
+    <rect x="110" y="510" width="100" height="100"/><rect x="210" y="510" width="100" height="100"/><rect x="310" y="510" width="100" height="100"/><rect x="410" y="510" width="100" height="100"/><rect x="510" y="510" width="100" height="100"/>
+  </g>
+  <!-- safe squares: side middles + center, highlighted -->
+  <g fill="none" stroke="#c0392b" stroke-width="3">
+    <rect x="112" y="312" width="96" height="96"/>
+    <rect x="312" y="112" width="96" height="96"/>
+    <rect x="512" y="312" width="96" height="96"/>
+    <rect x="312" y="512" width="96" height="96"/>
+    <rect x="312" y="312" width="96" height="96"/>
+  </g>
+  <!-- token clusters: 4 dots diamond at side middles -->
+  <!-- left mid (red) -->
+  <g fill="#c0392b">
+    <circle cx="160" cy="325" r="8"/><circle cx="160" cy="395" r="8"/><circle cx="145" cy="360" r="8"/><circle cx="175" cy="360" r="8"/>
+  </g>
+  <!-- top mid (yellow) -->
+  <g fill="#d4a017">
+    <circle cx="360" cy="125" r="8"/><circle cx="360" cy="195" r="8"/><circle cx="345" cy="160" r="8"/><circle cx="375" cy="160" r="8"/>
+  </g>
+  <!-- right mid (blue) -->
+  <g fill="#1e6fb8">
+    <circle cx="560" cy="325" r="8"/><circle cx="560" cy="395" r="8"/><circle cx="545" cy="360" r="8"/><circle cx="575" cy="360" r="8"/>
+  </g>
+  <!-- bottom mid (green) -->
+  <g fill="#28a745">
+    <circle cx="360" cy="525" r="8"/><circle cx="360" cy="595" r="8"/><circle cx="345" cy="560" r="8"/><circle cx="375" cy="560" r="8"/>
+  </g>
+  <!-- center: one token each color in diamond -->
+  <g>
+    <circle cx="360" cy="330" r="9" fill="#d4a017"/>
+    <circle cx="360" cy="390" r="9" fill="#28a745"/>
+    <circle cx="330" cy="360" r="9" fill="#c0392b"/>
+    <circle cx="390" cy="360" r="9" fill="#1e6fb8"/>
+  </g>
+  <!-- arrows: small into center -->
+  <g stroke="#333" stroke-width="2" fill="#333" marker-end="url(#a)">
+    <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z"/></marker></defs>
+    <line x1="310" y1="360" x2="325" y2="360"/>
+    <line x1="410" y1="360" x2="395" y2="360"/>
+    <line x1="360" y1="310" x2="360" y2="325"/>
+    <line x1="360" y1="410" x2="360" y2="395"/>
+  </g>
+  <!-- large arrows on borders -->
+  <g stroke-width="3" fill="none" marker-end="url(#a)">
+    <line x1="210" y1="230" x2="120" y2="230" stroke="#c0392b"/>
+    <line x1="490" y1="130" x2="490" y2="220" stroke="#d4a017"/>
+    <line x1="510" y1="430" x2="600" y2="430" stroke="#1e6fb8"/>
+    <line x1="230" y1="510" x2="230" y2="420" stroke="#28a745"/>
+  </g>
+  <text x="360" y="30" text-anchor="middle" font-size="16" fill="#333">Ashta Chamma style board — 5×5 (★/red outline = safe squares)</text>
+</svg>

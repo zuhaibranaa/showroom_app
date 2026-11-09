@@ -1,15 +1,20 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/vehicle_model.dart';
 import '../../providers/access_provider.dart';
 import '../../providers/vehicle_provider.dart';
+import '../../services/cloudinary_service.dart';
 import '../../utils/validators.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/loading_and_error.dart';
+import '../../config/reference_options.dart';
 
 class VehicleAddScreen extends ConsumerStatefulWidget {
   final String? id;
@@ -34,7 +39,6 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
   final _receiptNoController = TextEditingController();
   final _eChallanFineController = TextEditingController();
   final _biometricPhoneController = TextEditingController();
-  final _companyController = TextEditingController();
   final _sourceController = TextEditingController();
   final _engineCCController = TextEditingController();
   final _engineNoController = TextEditingController();
@@ -46,9 +50,15 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
   final _priceAmountController = TextEditingController();
 
   String? _selectedAgencyId;
+  String? _selectedCompany;
   String? _selectedDocumentStatus;
   DateTime? _biometricAvailableDate;
   bool _isZeroMeter = false;
+
+  List<File> _selectedVehicleImages = [];
+  List<String> _existingVehicleImageUrls = [];
+  List<String> _removedVehicleImageUrls = [];
+  bool _uploadingImages = false;
 
   bool _prefilled = false;
   DateTime? _originalCreatedAt;
@@ -83,7 +93,6 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
     _receiptNoController.dispose();
     _eChallanFineController.dispose();
     _biometricPhoneController.dispose();
-    _companyController.dispose();
     _sourceController.dispose();
     _engineCCController.dispose();
     _engineNoController.dispose();
@@ -105,10 +114,10 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
     _vinController.text = vehicle.vin;
     _descriptionController.text = vehicle.description ?? '';
     _selectedAgencyId = vehicle.agencyId;
+    _selectedCompany = vehicle.company;
     _isZeroMeter = vehicle.isZeroMeter;
     _selectedDocumentStatus = vehicle.documentStatus;
     _sourceController.text = vehicle.source ?? '';
-    _companyController.text = vehicle.company ?? '';
     _engineCCController.text = vehicle.engineCC ?? '';
     _engineNoController.text = vehicle.engineNo ?? '';
     _chassisNoController.text = vehicle.chassisNo ?? '';
@@ -126,7 +135,40 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
     _biometricPhoneController.text = vehicle.biometricPhone ?? '';
     _biometricAvailableDate = vehicle.biometricAvailableDate;
     _originalCreatedAt = vehicle.createdAt;
+    _existingVehicleImageUrls = vehicle.imageUrls ?? [];
     _prefilled = true;
+  }
+
+  Future<void> _pickImages() async {
+    try {
+      final picked = await ImagePicker().pickMultiImage();
+      if (picked.isNotEmpty) {
+        setState(() {
+          _selectedVehicleImages.addAll(
+            picked.map((x) => File(x.path)),
+          );
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to pick images: $e')));
+      }
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedVehicleImages.removeAt(index);
+    });
+  }
+
+  void _removeExistingImage(String url) {
+    setState(() {
+      _existingVehicleImageUrls.remove(url);
+      _removedVehicleImageUrls.add(url);
+    });
   }
 
   Future<void> _pickBiometricDate() async {
@@ -146,10 +188,39 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedAgencyId == null || _selectedAgencyId!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an agency')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please select an agency')));
       return;
+    }
+
+    // Upload images to Cloudinary if any selected.
+    List<String>? imageUrls;
+    if (_isEditing) {
+      // Start with existing images minus removed ones.
+      imageUrls = _existingVehicleImageUrls
+          .where((url) => !_removedVehicleImageUrls.contains(url))
+          .toList();
+    }
+    if (_selectedVehicleImages.isNotEmpty) {
+      setState(() => _uploadingImages = true);
+      try {
+        final cloudinary = CloudinaryService();
+        final newUrls = await cloudinary.uploadImages(
+          _selectedVehicleImages,
+          folder: 'vehicles/${_selectedAgencyId}',
+        );
+        imageUrls = [...?imageUrls, ...newUrls];
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Image upload failed: $e')));
+        }
+        setState(() => _uploadingImages = false);
+        return;
+      }
+      setState(() => _uploadingImages = false);
     }
 
     final now = DateTime.now();
@@ -170,18 +241,14 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
       receiptNo: _receiptNoController.text.trim().isEmpty
           ? null
           : _receiptNoController.text.trim(),
-      eChallanFine:
-          _eChallanFineController.text.trim().isNotEmpty
-              ? double.tryParse(_eChallanFineController.text.trim())
-              : null,
+      eChallanFine: _eChallanFineController.text.trim().isNotEmpty
+          ? double.tryParse(_eChallanFineController.text.trim())
+          : null,
       biometricAvailableDate: _biometricAvailableDate,
-      biometricPhone:
-          _biometricPhoneController.text.trim().isEmpty
-              ? null
-              : _biometricPhoneController.text.trim(),
-      company: _companyController.text.trim().isEmpty
+      biometricPhone: _biometricPhoneController.text.trim().isEmpty
           ? null
-          : _companyController.text.trim(),
+          : _biometricPhoneController.text.trim(),
+      company: _selectedCompany?.isEmpty == true ? null : _selectedCompany,
       engineCC: _engineCCController.text.trim().isEmpty
           ? null
           : _engineCCController.text.trim(),
@@ -209,11 +276,11 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
       sellerPhone: _sellerPhoneController.text.trim().isEmpty
           ? null
           : _sellerPhoneController.text.trim(),
-      priceAmount:
-          _priceAmountController.text.trim().isNotEmpty
-              ? double.tryParse(_priceAmountController.text.trim())
-              : null,
+      priceAmount: _priceAmountController.text.trim().isNotEmpty
+          ? double.tryParse(_priceAmountController.text.trim())
+          : null,
       isZeroMeter: _isZeroMeter,
+      imageUrls: imageUrls,
     );
     if (_isEditing) {
       await ref
@@ -243,26 +310,37 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
             return null;
           },
         ),
-        CustomTextField(
-          label: 'Company',
-          hint: 'e.g. Honda',
-          controller: _companyController,
+        DropdownButtonFormField<String>(
+          initialValue: _selectedCompany,
+          decoration: const InputDecoration(
+            labelText: 'Company',
+            border: OutlineInputBorder(),
+          ),
+          items: ReferenceOptions.makes
+              .map(
+                (make) => DropdownMenuItem(
+                  value: make,
+                  child: Text(make),
+                ),
+              )
+              .toList(),
+          onChanged: (value) {
+            setState(() => _selectedCompany = value);
+          },
           validator: (value) =>
-              Validators.validateRequired(value, 'Company'),
+              (value == null || value.isEmpty) ? 'Company is required' : null,
         ),
         CustomTextField(
           label: 'Engine CC',
           hint: 'e.g. 70cc',
           controller: _engineCCController,
-          validator: (value) =>
-              Validators.validateRequired(value, 'Engine CC'),
+          validator: (value) => Validators.validateRequired(value, 'Engine CC'),
         ),
         CustomTextField(
           label: 'Color',
           hint: 'e.g. Red',
           controller: _colorController,
-          validator: (value) =>
-              Validators.validateRequired(value, 'Color'),
+          validator: (value) => Validators.validateRequired(value, 'Color'),
         ),
         InkWell(
           onTap: () async {
@@ -272,12 +350,12 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
                 title: const Text('Document Status'),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    'Applied', 'Pending', 'Approved', 'Rejected'
-                  ].map((status) {
+                  children: ReferenceOptions.documentStatuses.entries.map((
+                    entry,
+                  ) {
                     return ListTile(
-                      title: Text(status),
-                      onTap: () => Navigator.pop(context, status),
+                      title: Text(entry.value),
+                      onTap: () => Navigator.pop(context, entry.key),
                     );
                   }).toList(),
                 ),
@@ -305,15 +383,13 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
           label: 'Source',
           hint: 'e.g. New Razi traders',
           controller: _sourceController,
-          validator: (value) =>
-              Validators.validateRequired(value, 'Source'),
+          validator: (value) => Validators.validateRequired(value, 'Source'),
         ),
         CustomTextField(
           label: 'Engine No',
           hint: 'e.g. q402782',
           controller: _engineNoController,
-          validator: (value) =>
-              Validators.validateRequired(value, 'Engine No'),
+          validator: (value) => Validators.validateRequired(value, 'Engine No'),
         ),
         CustomTextField(
           label: 'Chassis No',
@@ -382,9 +458,11 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
                   vertical: 12,
                 ),
               ),
-              child: Text(_biometricAvailableDate != null
-                  ? DateFormat('MMM d, yyyy').format(_biometricAvailableDate!)
-                  : 'Select date'),
+              child: Text(
+                _biometricAvailableDate != null
+                    ? DateFormat('MMM d, yyyy').format(_biometricAvailableDate!)
+                    : 'Select date',
+              ),
             ),
           ),
         ],
@@ -403,6 +481,82 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
           maxLines: 3,
           minLines: 3,
         ),
+        const SizedBox(height: 16),
+        const Text(
+          'Vehicle Images (optional)',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            ElevatedButton.icon(
+              onPressed: _uploadingImages ? null : _pickImages,
+              icon: const Icon(Icons.add_a_photo),
+              label: const Text('Add Images'),
+            ),
+            const SizedBox(width: 12),
+            if (_uploadingImages)
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const SizedBox(height: 8),
+        if (_selectedVehicleImages.isNotEmpty || _existingVehicleImageUrls.isNotEmpty)
+          SizedBox(
+            height: 80,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _selectedVehicleImages.length + _existingVehicleImageUrls.length,
+              itemBuilder: (context, index) {
+                final isNew = index < _selectedVehicleImages.length;
+                final actualIndex = isNew ? index : index - _selectedVehicleImages.length;
+                return Stack(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      width: 80,
+                      child: isNew
+                          ? Image.file(
+                              _selectedVehicleImages[actualIndex],
+                              fit: BoxFit.cover,
+                            )
+                          : Image.network(
+                              _existingVehicleImageUrls[actualIndex],
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (isNew) {
+                            _removeImage(actualIndex);
+                          } else {
+                            _removeExistingImage(_existingVehicleImageUrls[actualIndex]);
+                          }
+                        },
+                        child: Container(
+                          color: Colors.black54,
+                          child: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        if (_selectedVehicleImages.isNotEmpty || _existingVehicleImageUrls.isNotEmpty)
+          const SizedBox(height: 8),
       ],
     );
   }
@@ -448,9 +602,9 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
         },
         error: (error, _) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(error.toString())));
           }
         },
         loading: () {},
@@ -471,16 +625,18 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
         },
         error: (error, _) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(error.toString())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(error.toString())));
           }
         },
         loading: () {},
       );
     });
 
-    final title = _isEditing ? 'Edit Bike' : (_isZeroMeter ? 'Add Zero Meter Bike' : 'Add Used Bike');
+    final title = _isEditing
+        ? 'Edit Bike'
+        : (_isZeroMeter ? 'Add Zero Meter Bike' : 'Add Used Bike');
 
     if (_isEditing) {
       if (editingVehicle!.hasError) {
@@ -501,10 +657,7 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: Text(title), elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -562,10 +715,7 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
                       value: 'zero_meter',
                       child: Text('Zero Meter Bike'),
                     ),
-                    DropdownMenuItem(
-                      value: 'used',
-                      child: Text('Used Bike'),
-                    ),
+                    DropdownMenuItem(value: 'used', child: Text('Used Bike')),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -578,8 +728,9 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
               const SizedBox(height: 8),
               CustomButton(
                 label: _isEditing ? 'Save Changes' : 'Add Bike',
-                isLoading:
-                    _isEditing ? updateState.isLoading : createState.isLoading,
+                isLoading: _isEditing
+                    ? updateState.isLoading
+                    : createState.isLoading,
                 onPressed: _submit,
               ),
             ],

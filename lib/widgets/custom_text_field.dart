@@ -7,6 +7,7 @@ class CustomTextField extends StatelessWidget {
   final String? Function(String?)? validator;
   final TextInputType keyboardType;
   final bool obscureText;
+  final bool enabled;
   final int maxLines;
   final int minLines;
   final IconData? prefixIcon;
@@ -22,6 +23,7 @@ class CustomTextField extends StatelessWidget {
     this.validator,
     this.keyboardType = TextInputType.text,
     this.obscureText = false,
+    this.enabled = true,
     this.maxLines = 1,
     this.minLines = 1,
     this.prefixIcon,
@@ -44,6 +46,7 @@ class CustomTextField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          enabled: enabled,
           controller: controller,
           validator: validator,
           keyboardType: keyboardType,

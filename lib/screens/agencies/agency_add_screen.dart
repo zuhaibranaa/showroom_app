@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/agency_model.dart';
+import '../../providers/access_provider.dart';
 import '../../providers/agency_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/validators.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/custom_text_field.dart';
@@ -27,10 +29,39 @@ class _AgencyAddScreenState extends ConsumerState<AgencyAddScreen> {
 
   bool get _isEditing => widget.id != null;
 
+  /// Whether the current user can edit the agency name (super admin or agency owner).
+  bool get _canEditName {
+    final user = ref.read(currentUserProvider).value;
+    if (user == null) return false;
+    if (AccessService.isSuperAdmin(user)) return true;
+    // Agency owner can edit their own agency.
+    if (AccessService.isAgencyOwner(user) &&
+        user.agencyIds.contains(widget.id!)) return true;
+    return false;
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Non-owner, non-super-admin cannot create or edit agencies.
+    if (!_isEditing && !AccessService.isSuperAdmin(ref.read(currentUserProvider).value)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Only super admins can create agencies.'),
+            ),
+          );
+          context.go('/agencies');
+        }
+      });
+    }
   }
 
   void _prefill(AgencyModel agency) {
@@ -163,9 +194,20 @@ class _AgencyAddScreenState extends ConsumerState<AgencyAddScreen> {
                 hint: 'e.g. Downtown Showroom',
                 controller: _nameController,
                 prefixIcon: Icons.business_outlined,
+                enabled: _canEditName,
                 validator: (value) =>
                     Validators.validateRequired(value, 'Agency name'),
               ),
+              if (_isEditing && !_canEditName) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Only the agency owner or super admin can change the agency name.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
               const SizedBox(height: 8),
               CustomButton(
                 label: _isEditing ? 'Save Changes' : 'Add Agency',

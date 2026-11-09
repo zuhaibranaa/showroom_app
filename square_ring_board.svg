@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" width="720" height="720" font-family="sans-serif">
+  <rect width="720" height="720" fill="#f4e9d8"/>
+  <!-- outer square -->
+  <rect x="40" y="40" width="640" height="640" fill="none" stroke="#6b4f2a" stroke-width="4"/>
+  <!-- ring cells: 8 per side (corners shared) -->
+  <!-- We'll draw 7 inner segments per side -->
+  <g stroke="#6b4f2a" stroke-width="1.5" fill="#e8d9b8">
+    <!-- top side cells -->
+    <rect x="40" y="40" width="80" height="80"/><rect x="120" y="40" width="80" height="80"/><rect x="200" y="40" width="80" height="80"/><rect x="280" y="40" width="80" height="80"/><rect x="360" y="40" width="80" height="80"/><rect x="440" y="40" width="80" height="80"/><rect x="520" y="40" width="80" height="80"/><rect x="600" y="40" width="80" height="80"/>
+    <!-- right side -->
+    <rect x="600" y="120" width="80" height="80"/><rect x="600" y="200" width="80" height="80"/><rect x="600" y="280" width="80" height="80"/><rect x="600" y="360" width="80" height="80"/><rect x="600" y="440" width="80" height="80"/><rect x="600" y="520" width="80" height="80"/><rect x="600" y="600" width="80" height="80"/>
+    <!-- bottom side -->
+    <rect x="520" y="600" width="80" height="80"/><rect x="440" y="600" width="80" height="80"/><rect x="360" y="600" width="80" height="80"/><rect x="280" y="600" width="80" height="80"/><rect x="200" y="600" width="80" height="80"/><rect x="120" y="600" width="80" height="80"/><rect x="40" y="600" width="80" height="80"/>
+    <!-- left side -->
+    <rect x="40" y="520" width="80" height="80"/><rect x="40" y="440" width="80" height="80"/><rect x="40" y="360" width="80" height="80"/><rect x="40" y="280" width="80" height="80"/><rect x="40" y="200" width="80" height="80"/><rect x="40" y="120" width="80" height="80"/>
+  </g>
+  <!-- inner empty square -->
+  <rect x="120" y="120" width="480" height="480" fill="#f4e9d8" stroke="#6b4f2a" stroke-width="2"/>
+  <!-- player home corners inside -->
+  <g font-size="14" fill="#333">
+    <rect x="140" y="140" width="120" height="120" fill="#f8d7da" stroke="#c0392b"/>
+    <text x="200" y="205" text-anchor="middle">P1 Home</text>
+    <rect x="460" y="140" width="120" height="120" fill="#fff3cd" stroke="#d4a017"/>
+    <text x="520" y="205" text-anchor="middle">P2 Home</text>
+    <rect x="140" y="460" width="120" height="120" fill="#d4edda" stroke="#28a745"/>
+    <text x="200" y="525" text-anchor="middle">P3 Home</text>
+    <rect x="460" y="460" width="120" height="120" fill="#d1ecf1" stroke="#17a2b8"/>
+    <text x="520" y="525" text-anchor="middle">P4 Home</text>
+  </g>
+  <!-- safe squares: corners + midpoints of each side -->
+  <g fill="#c0392b" font-size="26" text-anchor="middle" dominant-baseline="central">
+    <text x="80" y="80">★</text>
+    <text x="640" y="80">★</text>
+    <text x="640" y="640">★</text>
+    <text x="80" y="640">★</text>
+    <text x="360" y="80">★</text>
+    <text x="640" y="360">★</text>
+    <text x="360" y="640">★</text>
+    <text x="80" y="360">★</text>
+  </g>
+  <text x="360" y="30" text-anchor="middle" font-size="18" fill="#6b4f2a">Square-ring board (★ = safe square) — 4 players, 4 pieces each</text>
+</svg>

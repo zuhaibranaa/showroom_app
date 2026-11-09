@@ -12,7 +12,8 @@ class SaleService {
 
   /// Commission earned by [dealerId] on a sale of [salePrice].
   /// Returns 0 when the dealer record is missing or has no rate set.
-  Future<double> _commissionFor(String dealerId, double salePrice) async {
+  Future<double> _commissionFor(String? dealerId, double salePrice) async {
+    if (dealerId == null || dealerId.isEmpty) return 0;
     final dealerDoc = await _firestore
         .collection(AppConfig.dealersCollection)
         .doc(dealerId)
@@ -102,28 +103,36 @@ class SaleService {
 
     if (oldSale.dealerId != sale.dealerId) {
       // Dealer changed: revert old dealer stats, apply new dealer stats.
-      final oldDealerRef =
-          _firestore.collection(AppConfig.dealersCollection).doc(oldSale.dealerId);
-      final newDealerRef =
-          _firestore.collection(AppConfig.dealersCollection).doc(sale.dealerId);
-      final oldDealerDoc = await oldDealerRef.get();
-      final newDealerDoc = await newDealerRef.get();
-      if (oldDealerDoc.exists) {
-        batch.update(oldDealerRef, {
-          'totalSales': FieldValue.increment(-1),
-          'totalCommission': FieldValue.increment(-oldCommission),
-        });
+      if (oldSale.dealerId != null) {
+        final oldDealerRef = _firestore
+            .collection(AppConfig.dealersCollection)
+            .doc(oldSale.dealerId);
+        final oldDealerDoc = await oldDealerRef.get();
+        if (oldDealerDoc.exists) {
+          batch.update(oldDealerRef, {
+            'totalSales': FieldValue.increment(-1),
+            'totalCommission': FieldValue.increment(-oldCommission),
+          });
+        }
       }
-      if (newDealerDoc.exists) {
-        batch.update(newDealerRef, {
-          'totalSales': FieldValue.increment(1),
-          'totalCommission': FieldValue.increment(newCommission),
-        });
+      if (sale.dealerId != null) {
+        final newDealerRef = _firestore
+            .collection(AppConfig.dealersCollection)
+            .doc(sale.dealerId);
+        final newDealerDoc = await newDealerRef.get();
+        if (newDealerDoc.exists) {
+          batch.update(newDealerRef, {
+            'totalSales': FieldValue.increment(1),
+            'totalCommission': FieldValue.increment(newCommission),
+          });
+        }
       }
-    } else if ((newCommission - oldCommission).abs() > 0.0001) {
+    } else if (sale.dealerId != null &&
+        (newCommission - oldCommission).abs() > 0.0001) {
       // Same dealer: adjust commission by the difference.
-      final dealerRef =
-          _firestore.collection(AppConfig.dealersCollection).doc(sale.dealerId);
+      final dealerRef = _firestore
+          .collection(AppConfig.dealersCollection)
+          .doc(sale.dealerId);
       final dealerDoc = await dealerRef.get();
       if (dealerDoc.exists) {
         batch.update(dealerRef, {
@@ -146,14 +155,17 @@ class SaleService {
 
     final batch = _firestore.batch();
     batch.delete(_firestore.collection(AppConfig.salesCollection).doc(id));
-    final dealerRef =
-        _firestore.collection(AppConfig.dealersCollection).doc(sale.dealerId);
-    final dealerDoc = await dealerRef.get();
-    if (dealerDoc.exists) {
-      batch.update(dealerRef, {
-        'totalSales': FieldValue.increment(-1),
-        'totalCommission': FieldValue.increment(-commission),
-      });
+    if (sale.dealerId != null) {
+      final dealerRef = _firestore
+          .collection(AppConfig.dealersCollection)
+          .doc(sale.dealerId);
+      final dealerDoc = await dealerRef.get();
+      if (dealerDoc.exists) {
+        batch.update(dealerRef, {
+          'totalSales': FieldValue.increment(-1),
+          'totalCommission': FieldValue.increment(-commission),
+        });
+      }
     }
     await batch.commit();
   }

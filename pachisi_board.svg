@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 700" width="700" height="700" font-family="sans-serif">
+  <!-- background -->
+  <rect width="700" height="700" fill="#f4e9d8"/>
+  <!-- board arms -->
+  <g fill="#e8d9b8" stroke="#6b4f2a" stroke-width="2">
+    <!-- top arm -->
+    <rect x="250" y="20" width="200" height="200"/>
+    <!-- bottom arm -->
+    <rect x="250" y="480" width="200" height="200"/>
+    <!-- left arm -->
+    <rect x="20" y="250" width="200" height="200"/>
+    <!-- right arm -->
+    <rect x="480" y="250" width="200" height="200"/>
+    <!-- center -->
+    <rect x="250" y="250" width="200" height="200" fill="#d9c49a"/>
+  </g>
+  <!-- grid lines inside each arm (3 cols x ~6 rows) -->
+  <g stroke="#6b4f2a" stroke-width="1">
+    <!-- top arm -->
+    <line x1="316.7" y1="20" x2="316.7" y2="220"/>
+    <line x1="383.3" y1="20" x2="383.3" y2="220"/>
+    <line x1="250" y1="53.3" x2="450" y2="53.3"/>
+    <line x1="250" y1="86.7" x2="450" y2="86.7"/>
+    <line x1="250" y1="120" x2="450" y2="120"/>
+    <line x1="250" y1="153.3" x2="450" y2="153.3"/>
+    <line x1="250" y1="186.7" x2="450" y2="186.7"/>
+    <!-- bottom arm -->
+    <line x1="316.7" y1="480" x2="316.7" y2="680"/>
+    <line x1="383.3" y1="480" x2="383.3" y2="680"/>
+    <line x1="250" y1="513.3" x2="450" y2="513.3"/>
+    <line x1="250" y1="546.7" x2="450" y2="546.7"/>
+    <line x1="250" y1="580" x2="450" y2="580"/>
+    <line x1="250" y1="613.3" x2="450" y2="613.3"/>
+    <line x1="250" y1="646.7" x2="450" y2="646.7"/>
+    <!-- left arm -->
+    <line x1="20" y1="316.7" x2="220" y2="316.7"/>
+    <line x1="20" y1="383.3" x2="220" y2="383.3"/>
+    <line x1="53.3" y1="250" x2="53.3" y2="450"/>
+    <line x1="86.7" y1="250" x2="86.7" y2="450"/>
+    <line x1="120" y1="250" x2="120" y2="450"/>
+    <line x1="153.3" y1="250" x2="153.3" y2="450"/>
+    <line x1="186.7" y1="250" x2="186.7" y2="450"/>
+    <!-- right arm -->
+    <line x1="480" y1="316.7" x2="680" y2="316.7"/>
+    <line x1="480" y1="383.3" x2="680" y2="383.3"/>
+    <line x1="513.3" y1="250" x2="513.3" y2="450"/>
+    <line x1="546.7" y1="250" x2="546.7" y2="450"/>
+    <line x1="580" y1="250" x2="580" y2="450"/>
+    <line x1="613.3" y1="250" x2="613.3" y2="450"/>
+    <line x1="646.7" y1="250" x2="646.7" y2="450"/>
+  </g>
+  <!-- center home -->
+  <text x="350" y="360" text-anchor="middle" font-size="22" fill="#6b4f2a">HOME ★</text>
+  <!-- safe squares marked with star (entry + every 4th) -->
+  <g fill="#c0392b" font-size="20" text-anchor="middle" dominant-baseline="central">
+    <!-- top arm entry (row near center) -->
+    <text x="350" y="203">★</text>
+    <!-- top arm 4th up -->
+    <text x="350" y="137">★</text>
+    <!-- bottom arm -->
+    <text x="350" y="497">★</text>
+    <text x="350" y="563">★</text>
+    <!-- left arm -->
+    <text x="217" y="350">★</text>
+    <text x="151" y="350">★</text>
+    <!-- right arm -->
+    <text x="483" y="350">★</text>
+    <text x="549" y="350">★</text>
+  </g>
+  <!-- corner starts -->
+  <g font-size="14" fill="#333">
+    <text x="120" y="120" text-anchor="middle">P1 Start</text>
+    <text x="580" y="120" text-anchor="middle">P2 Start</text>
+    <text x="120" y="580" text-anchor="middle">P3 Start</text>
+    <text x="580" y="580" text-anchor="middle">P4 Start</text>
+  </g>
+  <text x="350" y="30" text-anchor="middle" font-size="18" fill="#6b4f2a">Pachisi-style board (★ = safe square)</text>
+</svg>

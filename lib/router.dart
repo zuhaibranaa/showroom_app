@@ -30,6 +30,18 @@ import 'screens/sales/sales_list_screen.dart';
 import 'screens/vehicles/vehicle_add_screen.dart';
 import 'screens/vehicles/vehicle_detail_screen.dart';
 import 'screens/vehicles/vehicle_list_screen.dart';
+import 'screens/expenses/expense_list_screen.dart';
+import 'screens/expenses/expense_add_screen.dart';
+import 'widgets/app_shell.dart';
+import 'screens/tracking/documents_screen.dart';
+import 'screens/tracking/biometrics_screen.dart';
+
+import 'screens/receipts/receipt_screen.dart';
+import 'screens/reports/reports_screen.dart';
+import 'screens/settings/options_screen.dart';
+import 'screens/settings/retail_prices_screen.dart';
+import 'screens/vehicle_services/registration_transfer_screen.dart';
+
 
 /// Notifies [GoRouter] whenever the auth state or the signed-in user's
 /// profile changes, so redirects can react to login/logout/role changes.
@@ -46,6 +58,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
 
   User? _user;
   String? _role;
+  bool? _isAgencyOwner;
   bool? _mustChangePassword;
 
   User? get user => _user;
@@ -53,6 +66,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
   bool get isLoggedIn => _user != null;
   bool get isDealer => _role == 'dealer';
   bool get isSuperAdmin => _role == 'super_admin';
+  bool get isAgencyOwner => _isAgencyOwner == true;
   bool get mustChangePassword => _mustChangePassword == true;
 
   void _onAuthChanged(User? user) {
@@ -65,6 +79,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
       _profileSub = _ref.listen(userProfileStreamProvider(user.uid), (_, next) {
         if (next.hasValue) {
           _role = next.value?.role;
+          _isAgencyOwner = next.value?.isAgencyOwner;
           _mustChangePassword = next.value?.mustChangePassword;
           notifyListeners();
         }
@@ -72,6 +87,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
       final current = _ref.read(userProfileStreamProvider(user.uid));
       if (current.hasValue) {
         _role = current.value?.role;
+        _isAgencyOwner = current.value?.isAgencyOwner;
         _mustChangePassword = current.value?.mustChangePassword;
         notifyListeners();
       }
@@ -147,7 +163,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/dashboard';
       }
 
-      if (isSuperAdminRoute && !notifier.isSuperAdmin) {
+      if (isSuperAdminRoute && !notifier.isSuperAdmin && !notifier.isAgencyOwner) {
         return '/dashboard';
       }
 
@@ -181,136 +197,137 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/dashboard',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: DashboardScreen()),
+            MaterialPage(child: AppShell(builder: (_) => DashboardScreen())),
       ),
       GoRoute(
         path: '/profile',
-        pageBuilder: (context, state) => const MaterialPage(child: ProfileScreen()),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => ProfileScreen())),
       ),
       GoRoute(
         path: '/biometric-settings',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: BiometricSettingsScreen()),
+            MaterialPage(child: AppShell(builder: (_) => BiometricSettingsScreen())),
       ),
       GoRoute(
         path: '/vehicles',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: VehicleListScreen()),
+            MaterialPage(child: AppShell(builder: (_) => VehicleListScreen())),
       ),
       GoRoute(
         path: '/vehicles/add',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: VehicleAddScreen()),
+            MaterialPage(child: AppShell(builder: (_) => VehicleAddScreen())),
       ),
       GoRoute(
         path: '/vehicles/:id',
-        pageBuilder: (context, state) => MaterialPage(
-          child: VehicleDetailScreen(vehicleId: state.pathParameters['id']!),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => VehicleDetailScreen(vehicleId: state.pathParameters['id']!)),
         ),
       ),
       GoRoute(
         path: '/vehicles/:id/edit',
-        pageBuilder: (context, state) => MaterialPage(
-          child: VehicleAddScreen(id: state.pathParameters['id']),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => VehicleAddScreen(id: state.pathParameters['id'])),
         ),
       ),
       GoRoute(
         path: '/sales',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: SalesListScreen()),
+            MaterialPage(child: AppShell(builder: (_) => SalesListScreen())),
       ),
       GoRoute(
         path: '/sales/add',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: SaleAddScreen()),
+            MaterialPage(child: AppShell(builder: (_) => SaleAddScreen())),
       ),
       GoRoute(
         path: '/sales/:id',
-        pageBuilder: (context, state) => MaterialPage(
-          child: SaleDetailScreen(saleId: state.pathParameters['id']!),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => SaleDetailScreen(saleId: state.pathParameters['id']!)),
         ),
       ),
       GoRoute(
         path: '/sales/:id/edit',
-        pageBuilder: (context, state) => MaterialPage(
-          child: SaleAddScreen(id: state.pathParameters['id']),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => SaleAddScreen(id: state.pathParameters['id'])),
         ),
       ),
       GoRoute(
         path: '/dealers',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: DealerListScreen()),
+            MaterialPage(child: AppShell(builder: (_) => DealerListScreen())),
       ),
       GoRoute(
         path: '/dealers/add',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: DealerAddScreen()),
+            MaterialPage(child: AppShell(builder: (_) => DealerAddScreen())),
       ),
       GoRoute(
         path: '/dealers/:id',
-        pageBuilder: (context, state) => MaterialPage(
-          child: DealerDetailScreen(dealerId: state.pathParameters['id']!),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => DealerDetailScreen(dealerId: state.pathParameters['id']!)),
         ),
       ),
       GoRoute(
         path: '/dealers/:id/edit',
-        pageBuilder: (context, state) => MaterialPage(
-          child: DealerAddScreen(id: state.pathParameters['id']),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => DealerAddScreen(id: state.pathParameters['id'])),
         ),
       ),
       GoRoute(
         path: '/dealers/:id/permissions',
-        pageBuilder: (context, state) => MaterialPage(
-          child:
-              DealerPermissionsScreen(dealerId: state.pathParameters['id']!),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => DealerPermissionsScreen(dealerId: state.pathParameters['id']!)),
         ),
       ),
       GoRoute(
         path: '/agencies',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: AgencyListScreen()),
+            MaterialPage(child: AppShell(builder: (_) => AgencyListScreen())),
       ),
       GoRoute(
         path: '/agencies/add',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: AgencyAddScreen()),
+            MaterialPage(child: AppShell(builder: (_) => AgencyAddScreen())),
       ),
       GoRoute(
         path: '/agencies/:id/edit',
-        pageBuilder: (context, state) => MaterialPage(
-          child: AgencyAddScreen(id: state.pathParameters['id']),
+        pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => AgencyAddScreen(id: state.pathParameters['id'])),
         ),
       ),
       GoRoute(
         path: '/admins',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: AdminsScreen()),
+            MaterialPage(child: AppShell(builder: (_) => AdminsScreen())),
       ),
       GoRoute(
         path: '/admins/add',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: AdminInviteScreen()),
+            MaterialPage(child: AppShell(builder: (_) => AdminInviteScreen())),
       ),
       GoRoute(
         path: '/dealer-dashboard',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: DealerDashboardScreen()),
+            MaterialPage(child: AppShell(builder: (_) => DealerDashboardScreen())),
       ),
       GoRoute(
         path: '/dealer-sales',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: DealerSalesScreen()),
+            MaterialPage(child: AppShell(builder: (_) => DealerSalesScreen())),
       ),
       GoRoute(
         path: '/dealer-commission',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: DealerCommissionScreen()),
+            MaterialPage(child: AppShell(builder: (_) => DealerCommissionScreen())),
       ),
       GoRoute(
         path: '/dealer-vehicles',
         pageBuilder: (context, state) =>
-            const MaterialPage(child: DealerVehiclesScreen()),
+            MaterialPage(child: AppShell(builder: (_) => DealerVehiclesScreen())),
       ),
+      GoRoute(path: '/documents', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => DocumentsScreen()))),
+      GoRoute(path: '/biometrics', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => BiometricsScreen()))),
+
+      GoRoute(path: '/registration-transfer', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => RegistrationTransferScreen()))),
+      GoRoute(path: '/reports', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => ReportsScreen()))),
+      GoRoute(path: '/retail-prices', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => RetailPricesScreen()))),
+      GoRoute(path: '/options', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => OptionsScreen()))),
+      GoRoute(path: '/sales/:id/receipt', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => ReceiptScreen(saleId: state.pathParameters['id']!)))),
+      GoRoute(path: '/expenses', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => const ExpenseListScreen()))),
+      GoRoute(path: '/expenses/add', pageBuilder: (context, state) => MaterialPage(child: AppShell(builder: (_) => const ExpenseAddScreen()))),
     ],
   );
 });

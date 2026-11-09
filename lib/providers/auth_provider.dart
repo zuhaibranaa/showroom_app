@@ -110,6 +110,7 @@ class RegisterStateNotifier extends StateNotifier<AsyncValue<void>> {
           .map((e) => e.toString())
           .toList();
       final inviteName = (invite['name'] as String?)?.trim();
+      final isAgencyOwner = (invite['isAgencyOwner'] as bool?) ?? false;
       await _userService.createUserProfile(
         uid,
         UserModel(
@@ -121,6 +122,7 @@ class RegisterStateNotifier extends StateNotifier<AsyncValue<void>> {
           role: UserRole.admin.value,
           agencyIds: agencyIds,
           isActive: true,
+          isAgencyOwner: isAgencyOwner,
           createdAt: now,
           updatedAt: now,
         ),
@@ -359,12 +361,14 @@ class CreateAdminInviteNotifier extends StateNotifier<AsyncValue<void>> {
     required String name,
     required String email,
     required List<String> agencyIds,
+    bool isAgencyOwner = false,
   }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() => _userService.createAdminInvite(
           name: name,
           email: email,
           agencyIds: agencyIds,
+          isAgencyOwner: isAgencyOwner,
         ));
   }
 }

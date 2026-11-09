@@ -15,6 +15,7 @@ class UserModel {
   final String? agencyId; // single agency a dealer belongs to
   final bool isActive;
   final bool mustChangePassword; // dealer must change temp password on login
+  final bool isAgencyOwner; // agency owner can invite agency admins
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -29,6 +30,7 @@ class UserModel {
     this.agencyId,
     this.isActive = true,
     this.mustChangePassword = false,
+    this.isAgencyOwner = false,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -51,6 +53,7 @@ class UserModel {
     String? agencyId,
     bool? isActive,
     bool? mustChangePassword,
+    bool? isAgencyOwner,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -65,6 +68,7 @@ class UserModel {
       agencyId: agencyId ?? this.agencyId,
       isActive: isActive ?? this.isActive,
       mustChangePassword: mustChangePassword ?? this.mustChangePassword,
+      isAgencyOwner: isAgencyOwner ?? this.isAgencyOwner,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

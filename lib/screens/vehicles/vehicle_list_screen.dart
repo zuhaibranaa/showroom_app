@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/vehicle_model.dart';
+import '../../config/reference_options.dart';
 import '../../providers/access_provider.dart';
 import '../../utils/validators.dart';
 import '../../widgets/custom_card.dart';
@@ -19,9 +20,11 @@ class VehicleListScreen extends ConsumerWidget {
     final searchQuery = ref.watch(_searchQueryProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Available Bikes'),
-        elevation: 0,
+      appBar: AppBar(title: const Text('Available Bikes'), elevation: 0),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/vehicles/add'),
+        icon: const Icon(Icons.add),
+        label: const Text('Add Bike'),
       ),
       body: vehiclesAsync.when(
         data: (data) {
@@ -35,9 +38,7 @@ class VehicleListScreen extends ConsumerWidget {
           }).toList();
 
           if (filtered.isEmpty) {
-            return const Center(
-              child: Text('No bikes found'),
-            );
+            return const Center(child: Text('No bikes found'));
           }
           return RefreshIndicator(
             onRefresh: () => ref.refresh(accessibleVehiclesProvider.future),
@@ -69,7 +70,8 @@ class VehicleListScreen extends ConsumerWidget {
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         '${vehicle.make} ${vehicle.model}',
@@ -93,15 +95,20 @@ class VehicleListScreen extends ConsumerWidget {
                                     Icons.edit_outlined,
                                     color: Colors.blue,
                                   ),
-                                  onPressed: () =>
-                                      context.push('/vehicles/${vehicle.id}/edit'),
+                                  onPressed: () => context.push(
+                                    '/vehicles/${vehicle.id}/edit',
+                                  ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 12),
                             Row(
                               children: [
-                                Icon(Icons.tag, size: 16, color: Colors.grey[600]),
+                                Icon(
+                                  Icons.tag,
+                                  size: 16,
+                                  color: Colors.grey[600],
+                                ),
                                 const SizedBox(width: 8),
                                 Text('VIN: ${vehicle.vin}'),
                               ],
@@ -109,8 +116,11 @@ class VehicleListScreen extends ConsumerWidget {
                             const SizedBox(height: 8),
                             Row(
                               children: [
-                                Icon(Icons.directions_car,
-                                    size: 16, color: Colors.grey[600]),
+                                Icon(
+                                  Icons.directions_car,
+                                  size: 16,
+                                  color: Colors.grey[600],
+                                ),
                                 const SizedBox(width: 8),
                                 Text('License: ${vehicle.licensePlate}'),
                               ],
@@ -120,8 +130,11 @@ class VehicleListScreen extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 ElevatedButton.icon(
-                                  onPressed: () =>
-                                      _showSellBikeDialog(context, vehicle, ref),
+                                  onPressed: () => _showSellBikeDialog(
+                                    context,
+                                    vehicle,
+                                    ref,
+                                  ),
                                   icon: const Icon(
                                     Icons.attach_money,
                                     size: 18,
@@ -154,7 +167,10 @@ class VehicleListScreen extends ConsumerWidget {
   }
 
   void _showSellBikeDialog(
-      BuildContext context, VehicleModel vehicle, WidgetRef ref) {
+    BuildContext context,
+    VehicleModel vehicle,
+    WidgetRef ref,
+  ) {
     final receiptNoController = TextEditingController();
     final purchaserNameController = TextEditingController();
     final cnicController = TextEditingController();
@@ -209,14 +225,15 @@ class VehicleListScreen extends ConsumerWidget {
                           title: const Text('Document Status'),
                           content: Column(
                             mainAxisSize: MainAxisSize.min,
-                            children: [
-                              'Applied', 'Pending', 'Approved', 'Rejected'
-                            ].map((status) {
-                              return ListTile(
-                                title: Text(status),
-                                onTap: () => Navigator.pop(context, status),
-                              );
-                            }).toList(),
+                            children:
+                                ReferenceOptions.documentStatuses.entries.map((
+                                  entry,
+                                ) {
+                                  return ListTile(
+                                    title: Text(entry.value),
+                                    onTap: () => Navigator.pop(context, entry.key),
+                                  );
+                                }).toList(),
                           ),
                         ),
                       );

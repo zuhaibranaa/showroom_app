@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../providers/access_provider.dart';
 import '../../providers/agency_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/validators.dart';
@@ -20,6 +21,7 @@ class _AdminInviteScreenState extends ConsumerState<AdminInviteScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final Set<String> _selectedAgencyIds = {};
+  bool _isAgencyOwner = false;
 
   @override
   void dispose() {
@@ -37,17 +39,44 @@ class _AdminInviteScreenState extends ConsumerState<AdminInviteScreen> {
       return;
     }
 
+    final user = ref.read(currentUserProvider).value;
+    // Agency owner can only invite for their own agencies.
+    if (user != null &&
+        !AccessService.isSuperAdmin(user) &&
+        AccessService.isAgencyOwner(user)) {
+      final invalid = _selectedAgencyIds.where((id) => !user.agencyIds.contains(id));
+      if (invalid.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Agency owners can only invite for their own agencies.'),
+          ),
+        );
+        return;
+      }
+    }
+
     await ref.read(createAdminInviteProvider.notifier).createInvite(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           agencyIds: _selectedAgencyIds.toList(),
+          isAgencyOwner: _isAgencyOwner,
         );
   }
 
   @override
   Widget build(BuildContext context) {
     final createState = ref.watch(createAdminInviteProvider);
+    final user = ref.watch(currentUserProvider).value;
+    final isSuperAdmin = AccessService.isSuperAdmin(user);
+    final isAgencyOwner = AccessService.isAgencyOwner(user);
     final agencies = ref.watch(agenciesProvider);
+
+    // Only super admin or agency owner can access this screen.
+    if (user == null || (!isSuperAdmin && !isAgencyOwner)) {
+      return const Scaffold(
+        body: Center(child: Text('Unauthorized')),
+      );
+    }
 
     ref.listen(createAdminInviteProvider, (_, state) {
       state.when(
@@ -126,20 +155,33 @@ class _AdminInviteScreenState extends ConsumerState<AdminInviteScreen> {
                   if (data.isEmpty) {
                     return const Text('Create an agency first.');
                   }
+                  final filtered = isAgencyOwner
+                      ? data.where((a) => user?.agencyIds.contains(a.id) == true).toList()
+                      : data;
+                  if (filtered.isEmpty) {
+                    return const Text('No agencies available.');
+                  }
                   return Column(
-                    children: data.map((agency) {
+                    children: filtered.map((agency) {
+                      final initialSelected = isAgencyOwner &&
+                          user?.agencyIds.contains(agency.id) == true;
                       return CheckboxListTile(
                         title: Text(agency.name),
-                        value: _selectedAgencyIds.contains(agency.id),
-                        onChanged: (checked) {
-                          setState(() {
-                            if (checked == true) {
-                              _selectedAgencyIds.add(agency.id);
-                            } else {
-                              _selectedAgencyIds.remove(agency.id);
-                            }
-                          });
-                        },
+                        subtitle: isAgencyOwner
+                            ? const Text('Your agency')
+                            : null,
+                        value: isAgencyOwner ? initialSelected : _selectedAgencyIds.contains(agency.id),
+                        onChanged: isAgencyOwner
+                            ? null
+                            : (checked) {
+                                setState(() {
+                                  if (checked == true) {
+                                    _selectedAgencyIds.add(agency.id);
+                                  } else {
+                                    _selectedAgencyIds.remove(agency.id);
+                                  }
+                                });
+                              },
                         controlAffinity: ListTileControlAffinity.leading,
                       );
                     }).toList(),
@@ -148,6 +190,20 @@ class _AdminInviteScreenState extends ConsumerState<AdminInviteScreen> {
                 loading: () => const LinearProgressIndicator(),
                 error: (error, _) => Text('Error loading agencies: $error'),
               ),
+              if (!isAgencyOwner) ...[
+                const SizedBox(height: 16),
+                CheckboxListTile(
+                  title: const Text('Agency Owner'),
+                  subtitle: const Text(
+                    'Can invite other agency admins for this agency.',
+                  ),
+                  value: _isAgencyOwner,
+                  onChanged: (checked) {
+                    setState(() => _isAgencyOwner = checked == true);
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+              ],
               const SizedBox(height: 16),
               CustomButton(
                 label: 'Send Invite',

@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" width="720" height="720" font-family="sans-serif">
+  <rect width="720" height="720" fill="#eaf3ff"/>
+  <!-- thick border -->
+  <rect x="10" y="10" width="700" height="700" fill="none" stroke="#000" stroke-width="6"/>
+  <!-- 5x5 grid (cells 100x100), origin (110,110) -->
+  <g stroke="#333" stroke-width="2" fill="#fff">
+    <!-- rows -->
+    <rect x="110" y="110" width="100" height="100"/><rect x="210" y="110" width="100" height="100"/><rect x="310" y="110" width="100" height="100"/><rect x="410" y="110" width="100" height="100"/><rect x="510" y="110" width="100" height="100"/>
+    <rect x="110" y="210" width="100" height="100"/><rect x="210" y="210" width="100" height="100"/><rect x="310" y="210" width="100" height="100"/><rect x="410" y="210" width="100" height="100"/><rect x="510" y="210" width="100" height="100"/>
+    <rect x="110" y="310" width="100" height="100"/><rect x="210" y="310" width="100" height="100"/><rect x="310" y="310" width="100" height="100"/><rect x="410" y="310" width="100" height="100"/><rect x="510" y="310" width="100" height="100"/>
+    <rect x="110" y="410" width="100" height="100"/><rect x="210" y="410" width="100" height="100"/><rect x="310" y="410" width="100" height="100"/><rect x="410" y="410" width="100" height="100"/><rect x="510" y="410" width="100" height="100"/>
+    <rect x="110" y="510" width="100" height="100"/><rect x="210" y="510" width="100" height="100"/><rect x="310" y="510" width="100" height="100"/><rect x="410" y="510" width="100" height="100"/><rect x="510" y="510" width="100" height="100"/>
+  </g>
+  <!-- X markings: center + midpoints of outer sides (cross) -->
+  <g font-size="48" font-weight="bold" fill="#000" text-anchor="middle" dominant-baseline="central">
+    <text x="360" y="360">X</text>   <!-- center -->
+    <text x="360" y="160">X</text>   <!-- top mid -->
+    <text x="360" y="560">X</text>   <!-- bottom mid -->
+    <text x="160" y="360">X</text>   <!-- left mid -->
+    <text x="560" y="360">X</text>   <!-- right mid -->
+  </g>
+  <!-- Safe squares (X marks) highlighted -->
+  <g fill="none" stroke="#c0392b" stroke-width="3">
+    <rect x="312" y="312" width="96" height="96"/>
+    <rect x="312" y="112" width="96" height="96"/>
+    <rect x="312" y="512" width="96" height="96"/>
+    <rect x="112" y="312" width="96" height="96"/>
+    <rect x="512" y="312" width="96" height="96"/>
+  </g>
+  <!-- arrow loop path (approximate) around central X -->
+  <g stroke="#1e6fb8" stroke-width="3" fill="none" marker-end="url(#arrow)">
+    <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1e6fb8"/></marker></defs>
+    <path d="M 160 160 L 260 160 L 260 260 L 360 260 L 360 160 L 460 160 L 460 260 L 560 260 L 560 360 L 460 360 L 460 460 L 560 460 L 560 560 L 460 560 L 460 460 L 360 460 L 360 560 L 260 560 L 260 460 L 160 460 L 160 360 L 260 360 L 260 260 L 160 260 Z"/>
+  </g>
+  <!-- piece pools along edges -->
+  <g fill="#f8d7da" stroke="#c0392b">
+    <rect x="110" y="10" width="500" height="90" rx="8"/>
+    <rect x="110" y="620" width="500" height="90" rx="8"/>
+    <rect x="10" y="110" width="90" height="500" rx="8"/>
+    <rect x="620" y="110" width="90" height="500" rx="8"/>
+  </g>
+  <g font-size="12" fill="#333" text-anchor="middle">
+    <text x="360" y="55">P1 piece pool (top)</text>
+    <text x="360" y="665">P2 piece pool (bottom)</text>
+    <text x="55" y="360" transform="rotate(-90 55 360)">P3 pool</text>
+    <text x="665" y="360" transform="rotate(90 665 360)">P4 pool</text>
+  </g>
+  <text x="360" y="30" text-anchor="middle" font-size="16" fill="#333">Shell game board — 5×5 grid, X = safe squares (★), arrow = track path</text>
+</svg>

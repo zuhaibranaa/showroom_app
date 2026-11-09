@@ -196,7 +196,7 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
           [
             DateFormat('MMM d, yyyy').format(expense.date),
             if (vehicleName != null) vehicleName,
-            if (expense.notes?.isNotEmpty == true) expense.notes!,
+            if (expense.notes?.isNotEmpty == true) expense.notes,
           ].join('\n'),
         ),
         isThreeLine: true,

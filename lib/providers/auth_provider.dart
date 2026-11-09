@@ -270,6 +270,7 @@ class DealerRegistrationStateNotifier extends StateNotifier<AsyncValue<void>> {
           role: UserRole.dealer.value,
           agencyId: dealer.agencyId,
           isActive: true,
+          mustChangePassword: true,
           createdAt: now,
           updatedAt: now,
         ),

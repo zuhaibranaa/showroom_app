@@ -2,9 +2,96 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow all reads and writes in development
+    // Helper: check if the request is from a super admin
+    function isSuperAdmin() {
+      return request.auth != null
+          && request.auth.token.role == 'super_admin';
+    }
+
+    // Helper: check if the request is from staff (super admin or admin)
+    function isStaff() {
+      return request.auth != null
+          && (request.auth.token.role == 'super_admin'
+              || request.auth.token.role == 'admin');
+    }
+
+    // Helper: get the agencyIds of the signed-in admin user
+    function adminAgencyIds() {
+      return request.auth != null
+          ? (request.auth.token.agencyIds ?? [])
+          : [];
+    }
+
+    // Helper: check if the user owns the agency referenced in the resource
+    function ownsAgency(agencyId) {
+      return isStaff()
+          && (isSuperAdmin()
+              || agencyId in adminAgencyIds());
+    }
+
+    // Users collection: users can read their own profile; staff can read all profiles.
+    match /users/{userId} {
+      allow read: if request.auth != null
+          && (request.auth.uid == userId || isStaff());
+      allow write: if isSuperAdmin();
+    }
+
+    // Admin invites: only super admins can manage.
+    match /adminInvites/{inviteId} {
+      allow read, write: if isSuperAdmin();
+    }
+
+    // Agencies: staff can read; super admins can write; agency owners can write their own.
+    match /agencies/{agencyId} {
+      allow read: if isStaff();
+      allow create: if isSuperAdmin();
+      allow update, delete: if isSuperAdmin()
+          || (isStaff() && agencyId in adminAgencyIds());
+    }
+
+    // Dealers: staff can read dealers in their agencies; super admins can read all.
+    match /dealers/{dealerId} {
+      allow read: if isStaff()
+          && (isSuperAdmin()
+              || resource.data.agencyId in adminAgencyIds());
+      allow create: if isStaff();
+      allow update, delete: if isSuperAdmin()
+          || (isStaff() && resource.data.agencyId in adminAgencyIds());
+    }
+
+    // Vehicles: staff can read vehicles in their agencies; super admins can read all.
+    match /vehicles/{vehicleId} {
+      allow read: if isStaff()
+          && (isSuperAdmin()
+              || resource.data.agencyId in adminAgencyIds());
+      allow create: if isStaff();
+      allow update, delete: if isSuperAdmin()
+          || (isStaff() && resource.data.agencyId in adminAgencyIds());
+    }
+
+    // Sales: staff can read sales in their agencies; super admins can read all.
+    match /sales/{saleId} {
+      allow read: if isStaff()
+          && (isSuperAdmin()
+              || resource.data.agencyId in adminAgencyIds());
+      allow create: if isStaff();
+      allow update, delete: if isSuperAdmin()
+          || (isStaff() && resource.data.agencyId in adminAgencyIds());
+    }
+
+    // Expenses: staff can read expenses in their agencies; super admins can read all.
+    match /expenses/{expenseId} {
+      allow read: if isStaff()
+          && (isSuperAdmin()
+              || resource.data.agencyId in adminAgencyIds());
+      allow create: if isStaff();
+      allow update, delete: if isSuperAdmin()
+          || (isStaff() && resource.data.agencyId in adminAgencyIds());
+    }
+
+    // Generic fallback: deny all other collections.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

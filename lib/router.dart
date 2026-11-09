@@ -59,6 +59,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
   User? _user;
   String? _role;
   bool? _isAgencyOwner;
+  bool? _isActive;
   bool? _mustChangePassword;
 
   User? get user => _user;
@@ -67,6 +68,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
   bool get isDealer => _role == 'dealer';
   bool get isSuperAdmin => _role == 'super_admin';
   bool get isAgencyOwner => _isAgencyOwner == true;
+  bool get isActive => _isActive == true;
   bool get mustChangePassword => _mustChangePassword == true;
 
   void _onAuthChanged(User? user) {
@@ -80,6 +82,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
         if (next.hasValue) {
           _role = next.value?.role;
           _isAgencyOwner = next.value?.isAgencyOwner;
+          _isActive = next.value?.isActive;
           _mustChangePassword = next.value?.mustChangePassword;
           notifyListeners();
         }
@@ -88,6 +91,7 @@ class RouterRefreshNotifier extends ChangeNotifier {
       if (current.hasValue) {
         _role = current.value?.role;
         _isAgencyOwner = current.value?.isAgencyOwner;
+        _isActive = current.value?.isActive;
         _mustChangePassword = current.value?.mustChangePassword;
         notifyListeners();
       }
@@ -144,6 +148,11 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       if (isAuthPage) {
         return '/dashboard';
+      }
+
+      // Deactivated users cannot access the app.
+      if (!notifier.isActive) {
+        return '/login';
       }
 
       // Dealer on a temporary password must change it before anything else.

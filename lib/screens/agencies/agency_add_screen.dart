@@ -36,7 +36,9 @@ class _AgencyAddScreenState extends ConsumerState<AgencyAddScreen> {
     if (AccessService.isSuperAdmin(user)) return true;
     // Agency owner can edit their own agency.
     if (AccessService.isAgencyOwner(user) &&
-        user.agencyIds.contains(widget.id!)) return true;
+        user.agencyIds.contains(widget.id!)) {
+      return true;
+    }
     return false;
   }
 

@@ -156,15 +156,15 @@ class _AdminInviteScreenState extends ConsumerState<AdminInviteScreen> {
                     return const Text('Create an agency first.');
                   }
                   final filtered = isAgencyOwner
-                      ? data.where((a) => user?.agencyIds.contains(a.id) == true).toList()
+                      ? data.where((a) => user.agencyIds.contains(a.id)).toList()
                       : data;
                   if (filtered.isEmpty) {
                     return const Text('No agencies available.');
                   }
                   return Column(
                     children: filtered.map((agency) {
-                      final initialSelected = isAgencyOwner &&
-                          user?.agencyIds.contains(agency.id) == true;
+                      final initialSelected =
+                          isAgencyOwner && user.agencyIds.contains(agency.id);
                       return CheckboxListTile(
                         title: Text(agency.name),
                         subtitle: isAgencyOwner

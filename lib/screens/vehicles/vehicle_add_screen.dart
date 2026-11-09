@@ -55,9 +55,9 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
   DateTime? _biometricAvailableDate;
   bool _isZeroMeter = false;
 
-  List<File> _selectedVehicleImages = [];
+  final List<File> _selectedVehicleImages = [];
   List<String> _existingVehicleImageUrls = [];
-  List<String> _removedVehicleImageUrls = [];
+  final List<String> _removedVehicleImageUrls = [];
   bool _uploadingImages = false;
 
   bool _prefilled = false;
@@ -208,7 +208,7 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
         final cloudinary = CloudinaryService();
         final newUrls = await cloudinary.uploadImages(
           _selectedVehicleImages,
-          folder: 'vehicles/${_selectedAgencyId}',
+          folder: 'vehicles/$_selectedAgencyId',
         );
         imageUrls = [...?imageUrls, ...newUrls];
       } catch (e) {

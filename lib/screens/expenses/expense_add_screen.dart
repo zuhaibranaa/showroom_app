@@ -58,6 +58,19 @@ class _ExpenseAddScreenState extends ConsumerState<ExpenseAddScreen> {
           .read(expenseServiceProvider)
           .getExpenseById(widget.id!);
       if (!mounted) return;
+      // Agency-scoping: admins can only edit expenses for their own agencies.
+      final user = ref.read(currentUserProvider).value;
+      if (user == null ||
+          (!AccessService.isSuperAdmin(user) &&
+              !user.agencyIds.contains(expense.agencyId))) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unauthorized: expense not in your agency.')),
+          );
+        }
+        Navigator.of(context).pop();
+        return;
+      }
       setState(() {
         _existing = expense;
         _category = expense.category;

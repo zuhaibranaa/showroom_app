@@ -11,7 +11,7 @@ class ModulePermission {
   const ModulePermission({
     this.create = false,
     this.edit = false,
-    this.view = true,
+    this.view = false,
   });
 
   factory ModulePermission.fromJson(Map<String, dynamic> json) =>

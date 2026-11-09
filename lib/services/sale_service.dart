@@ -38,9 +38,7 @@ class SaleService {
         _firestore.collection(AppConfig.dealersCollection).doc(sale.dealerId);
     final dealerDoc = await dealerRef.get();
     if (dealerDoc.exists) {
-      final percent =
-          (dealerDoc.data()!['commissionPercent'] as num?)?.toDouble() ?? 0;
-      final commission = sale.salePrice * percent / 100;
+      final commission = await _commissionFor(sale.dealerId, sale.salePrice);
       batch.update(dealerRef, {
         'totalSales': FieldValue.increment(1),
         'totalCommission': FieldValue.increment(commission),

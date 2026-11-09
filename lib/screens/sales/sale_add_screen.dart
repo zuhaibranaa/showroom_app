@@ -43,7 +43,7 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
   bool _prefilled = false;
   DateTime? _originalCreatedAt;
 
-  List<File> _selectedSaleImages = [];
+  final List<File> _selectedSaleImages = [];
   bool _uploadingImages = false;
 
   bool get _isEditing => widget.id != null;
@@ -158,7 +158,7 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
         final cloudinary = CloudinaryService();
         imageUrls = await cloudinary.uploadImages(
           _selectedSaleImages,
-          folder: 'sales/${_selectedAgencyId}',
+          folder: 'sales/$_selectedAgencyId',
         );
       } catch (e) {
         if (mounted) {

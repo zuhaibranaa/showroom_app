@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/dealer_permissions.dart';
+import '../../providers/access_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/dealer_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/loading_and_error.dart';
@@ -39,11 +41,23 @@ class _DealerPermissionsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final user = ref.watch(currentUserProvider).value;
     final dealer = ref.watch(dealerByIdProvider(widget.dealerId));
     final updateState = ref.watch(updateDealerProvider);
     final data = dealer.value;
     if (data != null) {
       _load(data.permissions);
+    }
+
+    // Authorization: super admin can edit any dealer; agency owner can only
+    // edit dealers belonging to their own agencies.
+    if (data != null &&
+        !AccessService.isSuperAdmin(user) &&
+        !(AccessService.isAgencyOwner(user) &&
+            user?.agencyIds.contains(data.agencyId) == true)) {
+      return const Scaffold(
+        body: Center(child: Text('Unauthorized')),
+      );
     }
 
     ref.listen(updateDealerProvider, (_, state) {

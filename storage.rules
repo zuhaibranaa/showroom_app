@@ -2,9 +2,48 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow all reads and writes in development
+    // Helper: check if the request is from a super admin
+    function isSuperAdmin() {
+      return request.auth != null
+          && request.auth.token.role == 'super_admin';
+    }
+
+    // Helper: check if the request is from staff (super admin or admin)
+    function isStaff() {
+      return request.auth != null
+          && (request.auth.token.role == 'super_admin'
+              || request.auth.token.role == 'admin');
+    }
+
+    // Helper: get the agencyIds of the signed-in admin user
+    function adminAgencyIds() {
+      return request.auth != null
+          ? (request.auth.token.agencyIds ?? [])
+          : [];
+    }
+
+    // Helper: check if the user owns the agency referenced in the path
+    function ownsAgency(agencyId) {
+      return isStaff()
+          && (isSuperAdmin()
+              || agencyId in adminAgencyIds());
+    }
+
+    // Vehicle images: path pattern vehicles/{agencyId}/{fileName}
+    match /vehicles/{agencyId}/{fileName} {
+      allow read: if isStaff() && ownsAgency(agencyId);
+      allow write: if isStaff() && ownsAgency(agencyId);
+    }
+
+    // Sale images: path pattern sales/{agencyId}/{fileName}
+    match /sales/{agencyId}/{fileName} {
+      allow read: if isStaff() && ownsAgency(agencyId);
+      allow write: if isStaff() && ownsAgency(agencyId);
+    }
+
+    // Generic fallback: deny all other paths.
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

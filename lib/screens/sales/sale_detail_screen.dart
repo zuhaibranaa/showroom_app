@@ -102,6 +102,9 @@ class SaleDetailScreen extends ConsumerWidget {
           onBack: () => context.go('/sales'),
         ),
         data: (sale) {
+          if (sale == null) {
+            return const Center(child: Text('Sale not found'));
+          }
           final vehicleAsync = ref.watch(
             vehicleByIdOrNullProvider(sale.vehicleId),
           );

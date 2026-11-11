@@ -105,6 +105,7 @@ class _UpdateDocumentsDialogState extends ConsumerState<UpdateDocumentsDialog> {
     setState(() => _saving = true);
     final history = DocumentHistoryModel(
       vehicleId: widget.vehicle.id,
+      agencyId: widget.vehicle.agencyId,
       status: _status,
       statusDate: _statusChanged ? _statusDate : widget.vehicle.updatedAt,
       changedBy: widget.changedBy,

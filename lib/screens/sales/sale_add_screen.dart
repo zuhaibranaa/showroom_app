@@ -223,7 +223,7 @@ class _SaleAddScreenState extends ConsumerState<SaleAddScreen> {
         ? ref.watch(dealersProvider)
         : ref.watch(dealersByAgencyProvider(selectedAgencyId));
 
-    AsyncValue<SaleModel>? editingSale;
+    AsyncValue<SaleModel?>? editingSale;
     if (_isEditing) {
       ref.listen(saleByIdProvider(widget.id!), (_, next) {
         final data = next.value;

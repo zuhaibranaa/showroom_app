@@ -11,6 +11,7 @@ PendingPaymentModel _$PendingPaymentModelFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       agencyId: json['agencyId'] as String? ?? '',
       saleId: json['saleId'] as String?,
+      vehicleId: json['vehicleId'] as String?,
       buyerName: json['buyerName'] as String?,
       amount: (json['amount'] as num).toDouble(),
       dueDate: json['dueDate'] == null
@@ -28,6 +29,7 @@ Map<String, dynamic> _$PendingPaymentModelToJson(
       'id': instance.id,
       'agencyId': instance.agencyId,
       'saleId': instance.saleId,
+      'vehicleId': instance.vehicleId,
       'buyerName': instance.buyerName,
       'amount': instance.amount,
       'dueDate': instance.dueDate?.toIso8601String(),

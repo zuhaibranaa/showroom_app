@@ -72,6 +72,7 @@ class _PendingPaymentScreenState extends ConsumerState<PendingPaymentScreen> {
             PaymentModel(
               saleId: sale.id,
               vehicleId: sale.vehicleId,
+              agencyId: sale.agencyId,
               amount: amount,
               date: _date,
               mode: _mode,
@@ -108,6 +109,9 @@ class _PendingPaymentScreenState extends ConsumerState<PendingPaymentScreen> {
         loading: () => const LoadingWidget(message: 'Loading sale...'),
         error: (e, _) => ErrorView(message: e.toString()),
         data: (sale) {
+          if (sale == null) {
+            return const Center(child: Text('Sale not found'));
+          }
           final balance = sale.balance;
           final remaining =
               balance - (double.tryParse(_amount.text.trim()) ?? 0);

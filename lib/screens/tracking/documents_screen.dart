@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/reference_options.dart';
 import '../../models/vehicle_model.dart';
-import '../../providers/operations_provider.dart';
+import '../../providers/access_provider.dart';
+import '../../providers/document_history_provider.dart';
 import '../../providers/vehicle_provider.dart';
 import 'tracking_utils.dart';
 import 'update_documents_dialog.dart';
@@ -85,7 +86,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final vehicles = ref.watch(vehiclesStreamProvider);
+    final vehicles = ref.watch(accessibleVehiclesProvider);
     return Scaffold(
       appBar: AppBar(title: const Text('Document Tracking')),
       body: vehicles.when(
@@ -289,7 +290,7 @@ class _DocumentsScreenState extends ConsumerState<DocumentsScreen> {
                         onHistory: () async {
                           try {
                             final history = await ref.read(
-                              documentHistoryProvider(items[index].id).future,
+                              documentHistoryByVehicleProvider(items[index].id).future,
                             );
                             if (context.mounted) {
                               await showDocumentHistory(

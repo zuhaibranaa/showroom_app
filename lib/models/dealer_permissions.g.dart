@@ -31,6 +31,27 @@ DealerPermissions _$DealerPermissionsFromJson(Map<String, dynamic> json) =>
       dealers: json['dealers'] == null
           ? const ModulePermission()
           : ModulePermission.fromJson(json['dealers'] as Map<String, dynamic>),
+      expenses: json['expenses'] == null
+          ? const ModulePermission()
+          : ModulePermission.fromJson(json['expenses'] as Map<String, dynamic>),
+      registrationTransfer: json['registrationTransfer'] == null
+          ? const ModulePermission()
+          : ModulePermission.fromJson(json['registrationTransfer'] as Map<String, dynamic>),
+      reports: json['reports'] == null
+          ? const ModulePermission()
+          : ModulePermission.fromJson(json['reports'] as Map<String, dynamic>),
+      documents: json['documents'] == null
+          ? const ModulePermission()
+          : ModulePermission.fromJson(json['documents'] as Map<String, dynamic>),
+      biometrics: json['biometrics'] == null
+          ? const ModulePermission()
+          : ModulePermission.fromJson(json['biometrics'] as Map<String, dynamic>),
+      pendingPayments: json['pendingPayments'] == null
+          ? const ModulePermission()
+          : ModulePermission.fromJson(json['pendingPayments'] as Map<String, dynamic>),
+      retailPrices: json['retailPrices'] == null
+          ? const ModulePermission()
+          : ModulePermission.fromJson(json['retailPrices'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DealerPermissionsToJson(DealerPermissions instance) =>
@@ -38,4 +59,11 @@ Map<String, dynamic> _$DealerPermissionsToJson(DealerPermissions instance) =>
       'vehicles': instance.vehicles.toJson(),
       'sales': instance.sales.toJson(),
       'dealers': instance.dealers.toJson(),
+      'expenses': instance.expenses.toJson(),
+      'registrationTransfer': instance.registrationTransfer.toJson(),
+      'reports': instance.reports.toJson(),
+      'documents': instance.documents.toJson(),
+      'biometrics': instance.biometrics.toJson(),
+      'pendingPayments': instance.pendingPayments.toJson(),
+      'retailPrices': instance.retailPrices.toJson(),
     };

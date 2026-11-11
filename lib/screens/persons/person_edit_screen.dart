@@ -51,6 +51,9 @@ class _PersonEditScreenState extends ConsumerState<PersonEditScreen> {
             const Scaffold(body: LoadingWidget(message: 'Loading...')),
         error: (e, _) => Scaffold(body: ErrorView(message: e.toString())),
         data: (sale) {
+          if (sale == null) {
+            return const Scaffold(body: Center(child: Text('Sale not found')));
+          }
           if (!_loaded) {
             _name.text = sale.buyerName;
             _phone.text = sale.buyerPhone;
@@ -111,6 +114,10 @@ class _PersonEditScreenState extends ConsumerState<PersonEditScreen> {
             const Scaffold(body: LoadingWidget(message: 'Loading...')),
         error: (e, _) => Scaffold(body: ErrorView(message: e.toString())),
         data: (vehicle) {
+          if (vehicle == null) {
+            return const Scaffold(
+                body: Center(child: Text('Vehicle not found')));
+          }
           if (!_loaded) {
             _name.text = vehicle.sellerName ?? '';
             _phone.text = vehicle.sellerPhone ?? '';

@@ -107,10 +107,7 @@ class _DealerAddScreenState extends ConsumerState<DealerAddScreen> {
     if (_isEditing) {
       await ref.read(updateDealerProvider.notifier).updateDealer(widget.id!, dealer);
     } else {
-      await ref.read(createDealerProvider.notifier).createDealer(
-            dealer,
-            tempPassword: _tempPasswordController.text,
-          );
+      await ref.read(createDealerProvider.notifier).createDealer(dealer);
     }
   }
 
@@ -131,7 +128,7 @@ class _DealerAddScreenState extends ConsumerState<DealerAddScreen> {
       }
     });
 
-    AsyncValue<DealerModel>? editingDealer;
+    AsyncValue<DealerModel?>? editingDealer;
     if (_isEditing) {
       ref.listen(dealerByIdProvider(widget.id!), (_, next) {
         final data = next.value;

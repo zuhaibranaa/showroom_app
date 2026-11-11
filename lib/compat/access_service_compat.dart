@@ -36,6 +36,18 @@ class AccessServiceCompat {
     if (user == null) return false;
     return const AccessService().canInviteAgencyAdmin(userModelToEntity(user));
   }
+
+  /// Whether [user] can manage [agencyId] (super admin or agency owner of that agency).
+  static bool canManageAgency(UserModel? user, String agencyId) {
+    if (user == null) return false;
+    return const AccessService().canManageAgency(userModelToEntity(user), agencyId);
+  }
+
+  /// Whether [user] can access [module] within [agencyId].
+  static bool canAccessModule(UserModel? user, String module, String agencyId) {
+    if (user == null) return false;
+    return const AccessService().canAccessModule(userModelToEntity(user), module, agencyId);
+  }
 }
 
 /// Adapter that implements [IAccessService] using the domain [AccessService].
@@ -63,4 +75,12 @@ class AccessServiceAdapter implements IAccessService {
   @override
   bool canInviteAgencyAdmin(UserEntity? user) =>
       _service.canInviteAgencyAdmin(user);
+
+  @override
+  bool canManageAgency(UserEntity? user, String agencyId) =>
+      _service.canManageAgency(user, agencyId);
+
+  @override
+  bool canAccessModule(UserEntity? user, String module, String agencyId) =>
+      _service.canAccessModule(user, module, agencyId);
 }

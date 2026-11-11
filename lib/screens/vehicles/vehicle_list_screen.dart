@@ -10,6 +10,7 @@ import '../../utils/validators.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/loading_and_error.dart';
+import '../../widgets/rbac_gate.dart';
 
 class VehicleListScreen extends ConsumerWidget {
   const VehicleListScreen({super.key});
@@ -21,10 +22,14 @@ class VehicleListScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Available Bikes'), elevation: 0),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/vehicles/add'),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Bike'),
+      floatingActionButton: RbacGate(
+        module: 'vehicles',
+        action: 'create',
+        child: FloatingActionButton.extended(
+          onPressed: () => context.push('/vehicles/add'),
+          icon: const Icon(Icons.add),
+          label: const Text('Add Bike'),
+        ),
       ),
       body: vehiclesAsync.when(
         data: (data) {
@@ -129,20 +134,24 @@ class VehicleListScreen extends ConsumerWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                ElevatedButton.icon(
-                                  onPressed: () => _showSellBikeDialog(
-                                    context,
-                                    vehicle,
-                                    ref,
-                                  ),
-                                  icon: const Icon(
-                                    Icons.attach_money,
-                                    size: 18,
-                                  ),
-                                  label: const Text('Sell Bike'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue,
-                                    foregroundColor: Colors.white,
+                                RbacGate(
+                                  module: 'sales',
+                                  action: 'create',
+                                  child: ElevatedButton.icon(
+                                    onPressed: () => _showSellBikeDialog(
+                                      context,
+                                      vehicle,
+                                      ref,
+                                    ),
+                                    icon: const Icon(
+                                      Icons.attach_money,
+                                      size: 18,
+                                    ),
+                                    label: const Text('Sell Bike'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue,
+                                      foregroundColor: Colors.white,
+                                    ),
                                   ),
                                 ),
                               ],

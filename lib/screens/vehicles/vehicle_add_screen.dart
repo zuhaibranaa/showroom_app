@@ -577,7 +577,7 @@ class _VehicleAddScreenState extends ConsumerState<VehicleAddScreen> {
       }
     });
 
-    AsyncValue<VehicleModel>? editingVehicle;
+    AsyncValue<VehicleModel?>? editingVehicle;
     if (_isEditing) {
       ref.listen(vehicleByIdProvider(widget.id!), (_, next) {
         final data = next.value;

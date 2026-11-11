@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/expense_provider.dart';
 import '../../providers/vehicle_provider.dart';
 import 'expense_add_screen.dart';
+import '../../widgets/rbac_gate.dart';
 
 class ExpenseListScreen extends ConsumerStatefulWidget {
   const ExpenseListScreen({super.key});
@@ -39,17 +40,19 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
             ],
           ),
         ),
-        floatingActionButton: canManage
-            ? Builder(
-                builder: (context) => FloatingActionButton(
-                  onPressed: () => _openForm(
-                    context,
-                    DefaultTabController.of(context).index,
-                  ),
-                  child: const Icon(Icons.add),
-                ),
-              )
-            : null,
+        floatingActionButton: RbacGate(
+          module: 'expenses',
+          action: 'create',
+          child: Builder(
+            builder: (context) => FloatingActionButton(
+              onPressed: () => _openForm(
+                context,
+                DefaultTabController.of(context).index,
+              ),
+              child: const Icon(Icons.add),
+            ),
+          ),
+        ),
         body: !canManage
             ? const Center(child: Text('Only admins can manage expenses.'))
             : expenses.when(

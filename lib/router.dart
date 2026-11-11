@@ -176,6 +176,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         return '/dashboard';
       }
 
+      // Retail prices: super admin or agency owner only.
+      if (location == '/retail-prices' &&
+          !notifier.isSuperAdmin &&
+          !notifier.isAgencyOwner) {
+        return '/dashboard';
+      }
+
+      // Options: super admin only.
+      if (location == '/options' && !notifier.isSuperAdmin) {
+        return '/dashboard';
+      }
+
+      // Dealer routes: dealers only.
+      if (isDealerRoute && !notifier.isDealer) {
+        return '/dashboard';
+      }
+
+      // Non-dealers cannot access dealer-specific routes.
+      if (_dealerLocations.contains(location) && !notifier.isDealer) {
+        return '/dashboard';
+      }
+
       return null;
     },
     routes: [

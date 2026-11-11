@@ -235,6 +235,7 @@ class RetailPricesScreen extends ConsumerWidget {
                                   id: existing?.id ?? '',
                                   make: make,
                                   model: model,
+                                  agencyId: ref.read(currentUserProvider).value?.agencyId ?? '',
                                   price: double.parse(priceController.text.trim()),
                                   updatedAt: DateTime.now(),
                                 ),

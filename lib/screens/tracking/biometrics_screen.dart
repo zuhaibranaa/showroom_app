@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../config/reference_options.dart';
 import '../../models/sale_model.dart';
 import '../../models/vehicle_model.dart';
+import '../../providers/access_provider.dart';
 import '../../providers/sale_provider.dart';
 import '../../providers/vehicle_provider.dart';
 import 'tracking_utils.dart';
@@ -210,7 +211,7 @@ class _BiometricsScreenState extends ConsumerState<BiometricsScreen> {
       if (item.seller) {
         final vehicle = item.vehicleRecord!;
         await ref
-            .read(vehicleServiceProvider)
+            .read(updateVehicleProvider.notifier)
             .updateVehicle(
               vehicle.id,
               vehicle.copyWith(
@@ -222,7 +223,7 @@ class _BiometricsScreenState extends ConsumerState<BiometricsScreen> {
       } else {
         final sale = item.saleRecord!;
         await ref
-            .read(saleServiceProvider)
+            .read(updateSaleProvider.notifier)
             .updateSale(
               sale.id,
               sale.copyWith(
@@ -321,8 +322,8 @@ class _BiometricsScreenState extends ConsumerState<BiometricsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final vehicles = ref.watch(vehiclesStreamProvider);
-    final sales = ref.watch(salesStreamProvider);
+    final vehicles = ref.watch(accessibleVehiclesProvider);
+    final sales = ref.watch(accessibleSalesProvider);
     final hasError = vehicles.hasError || sales.hasError;
     final isLoading = vehicles.isLoading || sales.isLoading;
 

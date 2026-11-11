@@ -53,7 +53,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
     final vehiclesAsync = ref.watch(accessibleVehiclesProvider);
     final salesAsync = ref.watch(accessibleSalesProvider);
-    final expensesAsync = ref.watch(expensesProvider);
+    final expensesAsync = ref.watch(accessibleExpensesProvider);
     final dealersAsync = ref.watch(accessibleDealersProvider);
     final loading =
         vehiclesAsync.isLoading ||

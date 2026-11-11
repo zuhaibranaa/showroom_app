@@ -93,7 +93,7 @@ class _AgencyAddScreenState extends ConsumerState<AgencyAddScreen> {
     final createState = ref.watch(createAgencyProvider);
     final updateState = ref.watch(updateAgencyProvider);
 
-    AsyncValue<AgencyModel>? editingAgency;
+    AsyncValue<AgencyModel?>? editingAgency;
     if (_isEditing) {
       editingAgency = ref.watch(agencyByIdProvider(widget.id!));
     }

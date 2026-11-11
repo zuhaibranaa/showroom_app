@@ -114,6 +114,7 @@ class _DealerPermissionsScreenState
                   _ModulePermissionsCard(
                     title: 'Vehicles',
                     icon: Icons.directions_car,
+                    module: 'vehicles',
                     permission: draft.vehicles,
                     onChanged: (p) =>
                         setState(() => _draft = draft.copyWith(vehicles: p)),
@@ -122,6 +123,7 @@ class _DealerPermissionsScreenState
                   _ModulePermissionsCard(
                     title: 'Sales',
                     icon: Icons.shopping_cart,
+                    module: 'sales',
                     permission: draft.sales,
                     onChanged: (p) =>
                         setState(() => _draft = draft.copyWith(sales: p)),
@@ -130,9 +132,75 @@ class _DealerPermissionsScreenState
                   _ModulePermissionsCard(
                     title: 'Dealers',
                     icon: Icons.people,
+                    module: 'dealers',
                     permission: draft.dealers,
                     onChanged: (p) =>
                         setState(() => _draft = draft.copyWith(dealers: p)),
+                  ),
+                  const SizedBox(height: 12),
+                  _ModulePermissionsCard(
+                    title: 'Expenses',
+                    icon: Icons.receipt,
+                    module: 'expenses',
+                    permission: draft.expenses,
+                    onChanged: (p) =>
+                        setState(() => _draft = draft.copyWith(expenses: p)),
+                  ),
+                  const SizedBox(height: 12),
+                  _ModulePermissionsCard(
+                    title: 'Registration & Transfer',
+                    icon: Icons.description,
+                    module: 'registrationTransfer',
+                    permission: draft.registrationTransfer,
+                    onChanged: (p) =>
+                        setState(() => _draft =
+                            draft.copyWith(registrationTransfer: p)),
+                  ),
+                  const SizedBox(height: 12),
+                  _ModulePermissionsCard(
+                    title: 'Reports',
+                    icon: Icons.analytics,
+                    module: 'reports',
+                    permission: draft.reports,
+                    onChanged: (p) =>
+                        setState(() => _draft = draft.copyWith(reports: p)),
+                  ),
+                  const SizedBox(height: 12),
+                  _ModulePermissionsCard(
+                    title: 'Documents',
+                    icon: Icons.folder,
+                    module: 'documents',
+                    permission: draft.documents,
+                    onChanged: (p) =>
+                        setState(() => _draft = draft.copyWith(documents: p)),
+                  ),
+                  const SizedBox(height: 12),
+                  _ModulePermissionsCard(
+                    title: 'Biometrics',
+                    icon: Icons.fingerprint,
+                    module: 'biometrics',
+                    permission: draft.biometrics,
+                    onChanged: (p) =>
+                        setState(() => _draft = draft.copyWith(biometrics: p)),
+                  ),
+                  const SizedBox(height: 12),
+                  _ModulePermissionsCard(
+                    title: 'Pending Payments',
+                    icon: Icons.attach_money,
+                    module: 'pendingPayments',
+                    permission: draft.pendingPayments,
+                    onChanged: (p) =>
+                        setState(() => _draft =
+                            draft.copyWith(pendingPayments: p)),
+                  ),
+                  const SizedBox(height: 12),
+                  _ModulePermissionsCard(
+                    title: 'Retail Prices',
+                    icon: Icons.price_change,
+                    module: 'retailPrices',
+                    permission: draft.retailPrices,
+                    onChanged: (p) =>
+                        setState(() => _draft = draft.copyWith(retailPrices: p)),
                   ),
                   const SizedBox(height: 24),
                   CustomButton(
@@ -149,12 +217,14 @@ class _DealerPermissionsScreenState
 
 class _ModulePermissionsCard extends StatelessWidget {
   final String title;
+  final String module;
   final IconData icon;
   final ModulePermission permission;
   final ValueChanged<ModulePermission> onChanged;
 
   const _ModulePermissionsCard({
     required this.title,
+    required this.module,
     required this.icon,
     required this.permission,
     required this.onChanged,

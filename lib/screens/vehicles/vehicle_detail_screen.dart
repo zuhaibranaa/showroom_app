@@ -84,87 +84,92 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen> {
         ],
       ),
       body: vehicle.when(
-        data: (data) => ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            CustomCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${data.make} ${data.model}',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _DetailRow(label: 'Year', value: '${data.year}'),
-                  _DetailRow(label: 'Color', value: data.color),
-                  _DetailRow(label: 'License Plate', value: data.licensePlate),
-                  _DetailRow(label: 'VIN / Plate No', value: data.vin),
-                  _DetailRow(label: 'Engine No', value: data.engineNo ?? '—'),
-                  _DetailRow(label: 'Chassis No', value: data.chassisNo ?? '—'),
-                  _DetailRow(
-                    label: 'Added',
-                    value: '${data.createdAt.toLocal()}',
-                  ),
-                ],
-              ),
-            ),
-            if (data.description != null) ...[
-              const SizedBox(height: 16),
+        data: (data) {
+          if (data == null) {
+            return const Center(child: Text('Vehicle not found'));
+          }
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
               CustomCard(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Description',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(data.description!),
-                  ],
-                ),
-              ),
-            ],
-            if (data.imageUrls != null && data.imageUrls!.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              CustomCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Images',
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 120,
-                      child: ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: data.imageUrls!.length,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            width: 120,
-                            child: GestureDetector(
-                              onTap: () => _showImageViewer(data.imageUrls!, index),
-                              child: Image.network(
-                                data.imageUrls![index],
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          );
-                        },
+                    Text(
+                      '${data.make} ${data.model}',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    _DetailRow(label: 'Year', value: '${data.year}'),
+                    _DetailRow(label: 'Color', value: data.color),
+                    _DetailRow(label: 'License Plate', value: data.licensePlate),
+                    _DetailRow(label: 'VIN / Plate No', value: data.vin),
+                    _DetailRow(label: 'Engine No', value: data.engineNo ?? '—'),
+                    _DetailRow(label: 'Chassis No', value: data.chassisNo ?? '—'),
+                    _DetailRow(
+                      label: 'Added',
+                      value: '${data.createdAt.toLocal()}',
+                    ),
                   ],
                 ),
               ),
+              if (data.description != null) ...[
+                const SizedBox(height: 16),
+                CustomCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Description',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(data.description!),
+                    ],
+                  ),
+                ),
+              ],
+              if (data.imageUrls != null && data.imageUrls!.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                CustomCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Images',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 120,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: data.imageUrls!.length,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              width: 120,
+                              child: GestureDetector(
+                                onTap: () => _showImageViewer(data.imageUrls!, index),
+                                child: Image.network(
+                                  data.imageUrls![index],
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
-        ),
+          );
+        },
         loading: () => const LoadingWidget(message: 'Loading vehicle...'),
         error: (error, _) => ErrorView(
           message: error.toString(),

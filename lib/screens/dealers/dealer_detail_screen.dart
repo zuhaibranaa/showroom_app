@@ -80,6 +80,9 @@ class _DealerDetailScreenState extends ConsumerState<DealerDetailScreen> {
       ),
       body: dealer.when(
         data: (data) {
+          if (data == null) {
+            return const Center(child: Text('Dealer not found'));
+          }
           final agency = ref.watch(agencyByIdProvider(data.agencyId));
           return ListView(
             padding: const EdgeInsets.all(16),

@@ -12,6 +12,7 @@ import '../core/domain/entities/vehicle.dart';
 import '../core/domain/services/access_service.dart';
 import '../models/agency_model.dart';
 import '../models/dealer_model.dart';
+import '../models/dealer_permissions.dart';
 import '../models/sale_model.dart';
 import '../models/user_model.dart';
 import '../models/vehicle_model.dart';
@@ -159,6 +160,20 @@ class AccessService {
         return dealer.permissions.sales.view;
       case 'dealers':
         return dealer.permissions.dealers.view;
+      case 'expenses':
+        return dealer.permissions.expenses.view;
+      case 'registrationTransfer':
+        return dealer.permissions.registrationTransfer.view;
+      case 'reports':
+        return dealer.permissions.reports.view;
+      case 'documents':
+        return dealer.permissions.documents.view;
+      case 'biometrics':
+        return dealer.permissions.biometrics.view;
+      case 'pendingPayments':
+        return dealer.permissions.pendingPayments.view;
+      case 'retailPrices':
+        return dealer.permissions.retailPrices.view;
       default:
         return false;
     }
@@ -173,6 +188,20 @@ class AccessService {
         return dealer.permissions.sales.create;
       case 'dealers':
         return dealer.permissions.dealers.create;
+      case 'expenses':
+        return dealer.permissions.expenses.create;
+      case 'registrationTransfer':
+        return dealer.permissions.registrationTransfer.create;
+      case 'reports':
+        return dealer.permissions.reports.create;
+      case 'documents':
+        return dealer.permissions.documents.create;
+      case 'biometrics':
+        return dealer.permissions.biometrics.create;
+      case 'pendingPayments':
+        return dealer.permissions.pendingPayments.create;
+      case 'retailPrices':
+        return dealer.permissions.retailPrices.create;
       default:
         return false;
     }
@@ -187,8 +216,131 @@ class AccessService {
         return dealer.permissions.sales.edit;
       case 'dealers':
         return dealer.permissions.dealers.edit;
+      case 'expenses':
+        return dealer.permissions.expenses.edit;
+      case 'registrationTransfer':
+        return dealer.permissions.registrationTransfer.edit;
+      case 'reports':
+        return dealer.permissions.reports.edit;
+      case 'documents':
+        return dealer.permissions.documents.edit;
+      case 'biometrics':
+        return dealer.permissions.biometrics.edit;
+      case 'pendingPayments':
+        return dealer.permissions.pendingPayments.edit;
+      case 'retailPrices':
+        return dealer.permissions.retailPrices.edit;
       default:
         return false;
     }
   }
+
+  static bool dealerCanDelete(DealerModel? dealer, String module) {
+    if (dealer == null) return false;
+    switch (module) {
+      case 'vehicles':
+        return dealer.permissions.vehicles.edit; // reuse edit as delete
+      case 'sales':
+        return dealer.permissions.sales.edit;
+      case 'dealers':
+        return dealer.permissions.dealers.edit;
+      case 'expenses':
+        return dealer.permissions.expenses.edit;
+      case 'registrationTransfer':
+        return dealer.permissions.registrationTransfer.edit;
+      case 'reports':
+        return dealer.permissions.reports.edit;
+      case 'documents':
+        return dealer.permissions.documents.edit;
+      case 'biometrics':
+        return dealer.permissions.biometrics.edit;
+      case 'pendingPayments':
+        return dealer.permissions.pendingPayments.edit;
+      case 'retailPrices':
+        return dealer.permissions.retailPrices.edit;
+      default:
+        return false;
+    }
+  }
+
+  /// Whether [user] can manage [agencyId] (super admin or agency owner of that agency).
+  static bool canManageAgency(UserModel? user, String agencyId) {
+    if (user == null) return false;
+    return AccessServiceCompat.canManageAgency(user, agencyId);
+  }
+
+  /// Whether [user] can access [module] within [agencyId].
+  static bool canAccessModule(UserModel? user, String module, String agencyId) {
+    if (user == null) return false;
+    return AccessServiceCompat.canAccessModule(user, module, agencyId);
+  }
 }
+
+/// Resolves a dealer's actual module permissions from their stored
+/// [DealerModel]. Returns a map of module name -> ModulePermission.
+final dealerRbacProvider =
+    Provider.family<Map<String, ModulePermission>, String>((ref, dealerId) {
+  final dealerAsync = ref.watch(dealerByIdProvider(dealerId));
+  final p = dealerAsync.value?.permissions;
+  return {
+    'vehicles': p?.vehicles ?? const ModulePermission(),
+    'sales': p?.sales ?? const ModulePermission(),
+    'dealers': p?.dealers ?? const ModulePermission(),
+    'expenses': p?.expenses ?? const ModulePermission(),
+    'registrationTransfer':
+        p?.registrationTransfer ?? const ModulePermission(),
+    'reports': p?.reports ?? const ModulePermission(),
+    'documents': p?.documents ?? const ModulePermission(),
+    'biometrics': p?.biometrics ?? const ModulePermission(),
+    'pendingPayments': p?.pendingPayments ?? const ModulePermission(),
+    'retailPrices': p?.retailPrices ?? const ModulePermission(),
+  };
+});
+
+/// The agency the currently signed-in user belongs to.
+///
+/// - Super admin: returns the first agency (or null if none exist).
+/// - Agency owner / admin: returns their own agency.
+/// - Dealer: returns their agencyId.
+final currentAgencyProvider = FutureProvider<AgencyModel?>((ref) async {
+  final user = ref.watch(currentUserProvider).value;
+  if (user == null) return null;
+  final accessService = ref.watch(accessServiceProvider);
+  final agencyService = ref.watch(agencyApplicationServiceProvider);
+  if (accessService.isSuperAdmin(userModelToEntity(user))) {
+    final all = await agencyService.getAll();
+    return all.isNotEmpty ? agencyEntityToModel(all.first) : null;
+  }
+  // Agency owner or dealer: resolve their single agency.
+  final agencyId = user.agencyId;
+  if (agencyId != null && agencyId.isNotEmpty) {
+    final entity = await agencyService.getById(agencyId);
+    return entity != null ? agencyEntityToModel(entity) : null;
+  }
+  // Admin with multiple agencyIds: return the first.
+  if (user.agencyIds.isNotEmpty) {
+    final entity = await agencyService.getById(user.agencyIds.first);
+    return entity != null ? agencyEntityToModel(entity) : null;
+  }
+  return null;
+});
+
+/// Whether the current user can access [module] within their own agency.
+///
+/// Convenience provider that combines [currentUserProvider],
+/// [currentAgencyProvider], and [AccessService].
+final currentUserCanAccessModuleProvider =
+    FutureProvider.family<bool, String>((ref, module) async {
+  final user = ref.watch(currentUserProvider).value;
+  final agency = await ref.watch(currentAgencyProvider.future);
+  if (user == null || agency == null) return false;
+  return AccessService.canAccessModule(user, module, agency.id);
+});
+
+/// Whether the current user can manage their own agency.
+final currentUserCanManageAgencyProvider = FutureProvider<bool>((ref) async {
+  final user = ref.watch(currentUserProvider).value;
+  final agency = await ref.watch(currentAgencyProvider.future);
+  if (user == null || agency == null) return false;
+  return AccessService.canManageAgency(user, agency.id);
+});

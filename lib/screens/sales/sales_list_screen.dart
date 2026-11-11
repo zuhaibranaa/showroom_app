@@ -8,6 +8,7 @@ import '../../providers/access_provider.dart';
 import '../../utils/extensions.dart';
 import '../../widgets/custom_card.dart';
 import '../../widgets/loading_and_error.dart';
+import '../../widgets/rbac_gate.dart';
 
 enum _SaleListFilter { all, pending, paid, withNumber, withoutNumber }
 
@@ -79,9 +80,13 @@ class _SalesListScreenState extends ConsumerState<SalesListScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sales'), elevation: 0),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => context.push('/sales/add'),
-        child: const Icon(Icons.add),
+      floatingActionButton: RbacGate(
+        module: 'sales',
+        action: 'create',
+        child: FloatingActionButton(
+          onPressed: () => context.push('/sales/add'),
+          child: const Icon(Icons.add),
+        ),
       ),
       body: salesAsync.when(
         loading: () => const LoadingWidget(message: 'Loading sales...'),

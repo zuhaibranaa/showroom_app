@@ -6,6 +6,7 @@ class PendingPaymentModel {
   final String id;
   final String agencyId;
   final String? saleId;
+  final String? vehicleId;
   final String? buyerName;
   final double amount;
   final DateTime? dueDate;
@@ -18,6 +19,7 @@ class PendingPaymentModel {
     required this.id,
     this.agencyId = '',
     this.saleId,
+    this.vehicleId,
     this.buyerName,
     required this.amount,
     this.dueDate,
@@ -30,11 +32,12 @@ class PendingPaymentModel {
   factory PendingPaymentModel.fromJson(Map<String, dynamic> json) =>
       _$PendingPaymentModelFromJson(json);
   Map<String, dynamic> toJson() => _$PendingPaymentModelToJson(this);
-  PendingPaymentModel copyWith({String? id, String? agencyId, String? saleId, String? buyerName, double? amount, DateTime? dueDate, String? status, String? notes, DateTime? createdAt, DateTime? updatedAt}) {
+  PendingPaymentModel copyWith({String? id, String? agencyId, String? saleId, String? vehicleId, String? buyerName, double? amount, DateTime? dueDate, String? status, String? notes, DateTime? createdAt, DateTime? updatedAt}) {
     return PendingPaymentModel(
       id: id ?? this.id,
       agencyId: agencyId ?? this.agencyId,
       saleId: saleId ?? this.saleId,
+      vehicleId: vehicleId ?? this.vehicleId,
       buyerName: buyerName ?? this.buyerName,
       amount: amount ?? this.amount,
       dueDate: dueDate ?? this.dueDate,

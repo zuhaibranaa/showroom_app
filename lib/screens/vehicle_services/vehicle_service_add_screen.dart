@@ -185,6 +185,7 @@ class _VehicleServiceAddScreenState
         phone: _phoneController.text.trim(),
         amount: double.parse(_amountController.text.trim()),
         receivedBy: _receivedByController.text.trim(),
+        agencyId: ref.read(currentUserProvider).value?.agencyId ?? '',
         date: _date,
         note: _noteController.text.trim().isEmpty
             ? null

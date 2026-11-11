@@ -43,6 +43,9 @@ class ReceiptScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (sale) {
+          if (sale == null) {
+            return const Center(child: Text('Sale not found'));
+          }
           final vehicleAsync = ref.watch(
             vehicleByIdOrNullProvider(sale.vehicleId),
           );

@@ -1,14 +1,20 @@
 import '../core/domain/entities/agency.dart';
 import '../core/domain/entities/dealer.dart';
 import '../core/domain/entities/dealer_permissions.dart';
+import '../core/domain/entities/document_history.dart';
 import '../core/domain/entities/expense.dart';
+import '../core/domain/entities/pending_payment.dart';
+import '../core/domain/entities/retail_price.dart';
 import '../core/domain/entities/sale.dart';
 import '../core/domain/entities/user.dart';
 import '../core/domain/entities/vehicle.dart';
+import '../core/domain/entities/vehicle_service_record.dart';
 import '../models/agency_model.dart';
 import '../models/dealer_model.dart';
 import '../models/dealer_permissions.dart';
 import '../models/expense_model.dart';
+import '../models/operations_models.dart';
+import '../models/pending_payment_model.dart';
 import '../models/sale_model.dart';
 import '../models/user_model.dart';
 import '../models/vehicle_model.dart';
@@ -279,6 +285,148 @@ ExpenseEntity expenseModelToEntity(ExpenseModel m) {
     notes: m.notes,
     date: m.date,
     createdAt: m.createdAt,
+    updatedAt: m.updatedAt,
+  );
+}
+
+/// Converts a [PendingPaymentEntity] to a [PendingPaymentModel].
+PendingPaymentModel pendingPaymentEntityToModel(PendingPaymentEntity e) {
+  return PendingPaymentModel(
+    id: e.id,
+    agencyId: e.agencyId,
+    saleId: e.saleId,
+    vehicleId: e.vehicleId,
+    buyerName: e.buyerName,
+    amount: e.amount,
+    dueDate: e.dueDate,
+    status: e.status,
+    notes: e.notes,
+    createdAt: e.createdAt,
+    updatedAt: e.updatedAt,
+  );
+}
+
+/// Converts a [PendingPaymentModel] to a [PendingPaymentEntity].
+PendingPaymentEntity pendingPaymentModelToEntity(PendingPaymentModel m) {
+  return PendingPaymentEntity(
+    id: m.id,
+    agencyId: m.agencyId,
+    saleId: m.saleId,
+    vehicleId: m.vehicleId,
+    buyerName: m.buyerName,
+    amount: m.amount,
+    dueDate: m.dueDate,
+    status: m.status,
+    notes: m.notes,
+    createdAt: m.createdAt,
+    updatedAt: m.updatedAt,
+  );
+}
+
+/// Converts a [DocumentHistoryEntity] to a [DocumentHistoryModel].
+DocumentHistoryModel documentHistoryEntityToModel(DocumentHistoryEntity e) {
+  return DocumentHistoryModel(
+    id: e.id,
+    vehicleId: e.vehicleId,
+    agencyId: e.agencyId,
+    status: e.status,
+    changedBy: e.changedBy,
+    remarks: e.remarks,
+    registrationStatus: e.registrationStatus,
+    registeredFrom: e.registeredFrom,
+    numberPlate: e.numberPlate,
+    registrationBook: e.registrationBook,
+    checklist: e.checklist,
+    statusDate: e.statusDate,
+    createdAt: e.createdAt,
+  );
+}
+
+/// Converts a [DocumentHistoryModel] to a [DocumentHistoryEntity].
+DocumentHistoryEntity documentHistoryModelToEntity(DocumentHistoryModel m) {
+  return DocumentHistoryEntity(
+    id: m.id,
+    vehicleId: m.vehicleId,
+    agencyId: m.agencyId,
+    status: m.status,
+    changedBy: m.changedBy,
+    remarks: m.remarks,
+    registrationStatus: m.registrationStatus,
+    registeredFrom: m.registeredFrom,
+    numberPlate: m.numberPlate,
+    registrationBook: m.registrationBook,
+    checklist: m.checklist,
+    statusDate: m.statusDate,
+    createdAt: m.createdAt,
+  );
+}
+
+/// Converts a [VehicleServiceRecordEntity] to a [VehicleServiceRecord].
+VehicleServiceRecord vehicleServiceRecordEntityToModel(
+    VehicleServiceRecordEntity e) {
+  return VehicleServiceRecord(
+    id: e.id,
+    type: e.type,
+    chassisNo: e.chassisNo,
+    oldNumber: e.oldNumber,
+    newNumber: e.newNumber,
+    customerName: e.customerName,
+    firstOwner: e.firstOwner,
+    secondOwner: e.secondOwner,
+    phone: e.phone,
+    amount: e.amount,
+    receivedBy: e.receivedBy,
+    agencyId: e.agencyId,
+    date: e.date,
+    note: e.note,
+    firstOwnerBiometricPending: e.firstOwnerBiometricPending,
+    secondOwnerBiometricPending: e.secondOwnerBiometricPending,
+  );
+}
+
+/// Converts a [VehicleServiceRecord] to a [VehicleServiceRecordEntity].
+VehicleServiceRecordEntity vehicleServiceRecordModelToEntity(
+    VehicleServiceRecord m) {
+  return VehicleServiceRecordEntity(
+    id: m.id,
+    type: m.type,
+    phone: m.phone,
+    receivedBy: m.receivedBy,
+    agencyId: m.agencyId,
+    chassisNo: m.chassisNo,
+    oldNumber: m.oldNumber,
+    newNumber: m.newNumber,
+    customerName: m.customerName,
+    firstOwner: m.firstOwner,
+    secondOwner: m.secondOwner,
+    note: m.note,
+    amount: m.amount,
+    firstOwnerBiometricPending: m.firstOwnerBiometricPending,
+    secondOwnerBiometricPending: m.secondOwnerBiometricPending,
+    date: m.date,
+  );
+}
+
+/// Converts a [RetailPriceEntity] to a [RetailPriceModel].
+RetailPriceModel retailPriceEntityToModel(RetailPriceEntity e) {
+  return RetailPriceModel(
+    id: e.id,
+    make: e.make,
+    model: e.model,
+    agencyId: e.agencyId,
+    price: e.price,
+    updatedAt: e.updatedAt,
+  );
+}
+
+/// Converts a [RetailPriceModel] to a [RetailPriceEntity].
+RetailPriceEntity retailPriceModelToEntity(RetailPriceModel m) {
+  return RetailPriceEntity(
+    id: m.id,
+    make: m.make,
+    model: m.model,
+    agencyId: m.agencyId,
+    price: m.price,
     updatedAt: m.updatedAt,
   );
 }
